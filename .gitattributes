@@ -1,0 +1,117 @@
+# Automatically normalize line endings for all text-based files
+# https://git-scm.com/docs/gitattributes#_end_of_line_conversion
+
+# Set default behavior to automatically normalize line endings.
+* text=auto eol=lf
+
+# Common text files
+*.txt text eol=lf
+*.md text eol=lf diff=markdown
+*.markdown text eol=lf diff=markdown
+*.html text eol=lf diff=html
+*.htm text eol=lf diff=html
+*.css text eol=lf diff=css
+*.json text eol=lf diff=json
+*.jsonc text eol=lf diff=json
+*.yaml text eol=lf diff=yaml
+*.yml text eol=lf diff=yaml
+*.toml text eol=lf diff=toml
+
+# Other text files
+LICENSE text eol=lf
+CHANGELOG text eol=lf
+.gitignore text eol=lf
+Makefile text eol=lf
+justfile text eol=lf
+
+# Script files
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.py text eol=lf diff=python
+*.pyi text eol=lf diff=python
+*.js text eol=lf
+*.jsx text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+
+# Code files
+*.go text eol=lf
+*.rs text eol=lf
+*.lock text eol=lf
+
+# Executables
+*.exe binary
+*.pyc binary
+
+# Archives
+*.7z binary
+*.gz binary
+*.jar binary
+*.rar binary
+*.tar binary
+*.zip binary
+
+# Fonts
+*.ttf binary
+*.eot binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+
+# Graphics
+*.ai binary
+*.bmp binary
+*.eps binary
+*.gif binary
+*.gifv binary
+*.ico binary
+*.jng binary
+*.jp2 binary
+*.jpg binary
+*.jpeg binary
+*.jpx binary
+*.jxr binary
+*.pdf binary
+*.png binary
+*.psb binary
+*.psd binary
+*.svg text
+*.svgz binary
+*.tif binary
+*.tiff binary
+*.wbmp binary
+*.webp binary
+
+# Audio
+*.kar binary
+*.m4a binary
+*.mid binary
+*.midi binary
+*.mp3 binary
+*.ogg binary
+*.ra binary
+
+# Video
+*.3gpp binary
+*.3gp binary
+*.as binary
+*.asf binary
+*.asx binary
+*.avi binary
+*.fla binary
+*.flv binary
+*.m4v binary
+*.mng binary
+*.mov binary
+*.mp4 binary
+*.mpeg binary
+*.mpg binary
+*.ogv binary
+*.swc binary
+*.swf binary
+*.webm binary

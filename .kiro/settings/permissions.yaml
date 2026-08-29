@@ -1,0 +1,15 @@
+rules:
+  # Block all tools that read files from accessing secrets
+  - capability: fs_read
+    match: [".env", ".env.*", "secrets/**", "**/*.pem"]
+    effect: deny
+
+  # Allow specific shell commands without prompting
+  - capability: shell
+    match: ["npm test *", "npm run build", "git status", "git diff", "git log"]
+    effect: allow
+
+  # Allow an MCP servers tools
+  - capability: mcp
+    match: ["github/*"]
+    effect: allow

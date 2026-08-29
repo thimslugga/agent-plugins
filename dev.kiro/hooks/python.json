@@ -1,0 +1,24 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "lint-on-save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.ts$",
+      "action": { "type": "command", "command": "npm run lint" },
+      "timeout": 30,
+      "enabled": true
+    },
+    {
+      "name": "format-on-save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "prettier --write {{filePath}}"
+      },
+      "timeout": 10,
+      "enabled": true
+    }
+  ]
+}

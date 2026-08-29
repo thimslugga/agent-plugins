@@ -1,0 +1,189 @@
+# EditorConfig: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+spelling_language = en-US
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[.git*]
+indent_style = tab
+indent_size = tab
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+
+[*.{sh,bash}]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+insert_final_newline = false
+max_line_length = 80
+shell_variant = bash
+
+[*.{cmd,bat,ps1}]
+end_of_line = crlf
+
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+[justfile]
+indent_style = space
+indent_size = 2
+
+[*.{py,pyi}]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 100
+docstring_fill_column = 99 # Docstring line wrapping
+
+[.venvs/**.py]
+indent_size = unset
+indent_style = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+end_of_line = unset
+
+[*.rb]
+indent_style = space
+indent_size = 2
+
+[*.php]
+indent_style = space
+indent_size = 4
+
+[*.{pl,pm}]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{js,jsx,bun,coffee}]
+indent_style = space
+indent_size = 2
+quote_type = single
+
+[*.{ts,tsx}]
+indent_style = space
+indent_size = 2
+
+[node_modules/**.js]
+indent_size = unset
+indent_style = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+end_of_line = unset
+
+[*.rs]
+indent_style = space
+indent_size = 4
+insert_final_newline = false
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[tests/**/*.rs]
+charset = utf-8
+indent_size = unset
+indent_style = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+end_of_line = unset
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+[*.{json,jsonc,json5}]
+indent_style = space
+indent_size = 2
+
+[package.json]
+indent_style = space
+indent_size = 2
+
+[*.{yaml,yml,yamllint,ansible-lint,butane,bu}]
+indent_style = space
+indent_size = 2
+
+[*.{json,jsonc}]
+indent_style = space
+indent_size = 2
+
+[*.toml]
+indent_style = space
+indent_size = 4
+max_line_length = 80
+
+[*.{xml,plist}]
+indent_style = space
+indent_size = 2
+insert_final_newline = ignore
+
+[*.{ini,cfg,conf}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = false
+
+[*.{tf,tfvars,tf.json}]
+indent_style = space
+indent_size = 2
+
+[*.{pkr.hcl,pkr.hcl.json}]
+indent_style = space
+indent_size = 2
+
+[*.{bazel,bzl}]
+indent_size = 4
+indent_style = space
+
+[*.{csv,tsv}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+trim_trailing_whitespace = false
+insert_final_newline = true
+
+[*.graphql]
+indent_style = space
+indent_size = 2
+
+[*.{html,htm}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.{css,scss,less}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+[LICENSE]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+
+[*.txt]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset

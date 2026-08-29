@@ -1,2 +1,3 @@
-# agent-plugins-thimslugga
+# Agent Plugins
+
 Personal agent plugins

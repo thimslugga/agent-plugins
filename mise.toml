@@ -1,0 +1,20 @@
+# mise.toml - Tool versions and tasks for Agent Plugins for AWS
+# See: https://mise.jdx.dev
+
+min_version = "2026.2.4"
+
+[tools]
+python = "3.12"
+node = "24"
+uv = "latest"
+rumdl = "latest"
+gitleaks = "latest"
+
+
+# ==================
+# ROOT LEVEL TASKS
+# ==================
+
+[tasks.security]
+description = "Run security scans"
+run = "gitleaks detect --source . --verbose"

@@ -1,4 +1,6 @@
-# POWER.md
+# Kiro Powers
+
+## POWER.md file
 
 Powers built with the legacy `POWER.md` format continue to work.
 

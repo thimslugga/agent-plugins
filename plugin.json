@@ -1,20 +1,35 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "agent-plugins-thimslugga",
+  "name": "agent-plugins",
   "version": "1.0.0",
   "description": "Personal agent plugins",
   "author": {
     "name": "Adam Kaminski",
+    "email": "adam@adamkaminski.com",
     "url": "https://github.com/thimslugga/"
   },
-  "keywords": ["skills", "agent-plugins", "mcp", "steering"],
   "homepage": "https://github.com/thimslugga/agent-plugins/docs",
   "repository": "https://github.com/thimslugga/agent-plugins",
   "license": "MIT",
+  "keywords": [
+    "ai",
+    "ai-agents",
+    "skills",
+    "agent-plugins",
+    "mcp",
+    "a2a",
+    "multi-agent",
+    "tool-use",
+    "hooks",
+    "steering"
+  ],
   "extensions": {
     "dev.kiro": {
       "hooks": true,
       "steering": true
+    },
+    "com.github.pilot": {
+      "hooks": true
     }
   }
 }

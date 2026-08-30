@@ -128,7 +128,10 @@ Agent Plugins is openly licensed and developed in public. Its initial Technical 
 
 ## References
 
+- <https://aws.amazon.com/blogs/opensource/aws-supports-agent-plugins-an-open-standard-for-portable-agent-extensions/>
 - <https://kiro.dev/blog/powers-supports-plugins/>
+- <https://docs.aws.amazon.com/agent-toolkit/latest/userguide/aws-cli.html>
+- <https://github.com/awslabs/agent-plugins/>
 - <https://agent-plugins.org/>
 - <https://agent-plugins.org/specification>
 - <https://github.com/agentplugins/agent-plugins-spec>

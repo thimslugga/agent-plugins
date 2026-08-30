@@ -1,33 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
-    "local-validator": {
-      "type": "stdio",
-      "command": "./bin/validator",
-      "args": ["--data", "${PLUGIN_DATA}/validator"],
-      "env": {
-        "CONFIG": "${PLUGIN_ROOT}/config.json"
-      },
-      "cwd": "${PLUGIN_ROOT}",
-      "disabled": true
-    },
-    "github": {
+    "github-mcp": {
       "type": "streamable-http",
-      "url": "https://api.github.com/mcp",
-      "oauth": {
-        "oauthScopes": []
-      },
-      "disabled": false
+      "url": "https://api.github.com/mcp"
     },
     "aws-knowledge-mcp": {
       "type": "streamable-http",
-      "url": "https://knowledge-mcp.global.api.aws",
-      "disabled": true
+      "url": "https://knowledge-mcp.global.api.aws"
     },
-    "exa": {
+    "exa-mcp": {
       "type": "streamable-http",
-      "url": "https://mcp.exa.ai/mcp",
-      "disabled": true
+      "url": "https://mcp.exa.ai/mcp"
     }
   }
 }

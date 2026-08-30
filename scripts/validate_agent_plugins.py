@@ -29,6 +29,7 @@ MCP_SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 
 # From the published plugin.schema.json.
 NAME_RE = re.compile(r"^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
+
 MANIFEST_KEYS = {
     "$schema",
     "name",
@@ -41,6 +42,7 @@ MANIFEST_KEYS = {
     "keywords",
     "extensions",
 }
+
 AUTHOR_KEYS = {"name", "email", "url"}
 
 # Keys some clients accept at the manifest top level but the spec does not.

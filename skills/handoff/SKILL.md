@@ -1,7 +1,8 @@
 ---
 name: handoff
 description: "Compacts the current conversation into a handoff document so a fresh agent can continue the work in a new session."
-disable-model-invocation: true
+metadata:
+  disable-model-invocation: true
 ---
 
 # Handoff

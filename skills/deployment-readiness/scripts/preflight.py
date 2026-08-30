@@ -5,9 +5,12 @@
 Reports the Linux variant, deployment state, SELinux mode, and free space,
 then exits 0 if the baseline is satisfiable or 1 if any blocker is present.
 
-Standard library only, so it runs on a freshly imaged host with nothing
-installed. Never mutates system state.
+Features:
+    - Standard library only, so it runs on a freshly imaged host with nothing
+installed.
+    - Never mutates system state.
 
+Usage:
     python3 preflight.py
     python3 preflight.py --json
 """

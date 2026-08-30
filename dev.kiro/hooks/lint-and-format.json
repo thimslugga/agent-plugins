@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "shfmt-on-save",
+      "description": "Format shell scripts on save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.sh$",
+      "action": {
+        "type": "command",
+        "command": "shfmt -w \"{{filePath}}\" 2>/dev/null || true"
+      },
+      "timeout": 30,
+      "enabled": true
+    },
+    {
+      "name": "ruff-on-save",
+      "description": "Auto-fix + format Python files on save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.py$",
+      "action": {
+        "type": "command",
+        "command": "ruff check --fix --quiet \"{{filePath}}\" 2>/dev/null; ruff format --quiet \"{{filePath}}\" 2>/dev/null || true"
+      },
+      "timeout": 30,
+      "enabled": true
+    }
+  ]
+}

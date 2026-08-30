@@ -1,5 +1,18 @@
 {
+  "telemetry.enabled": false,
+  "codeWhisperer.shareCodeWhispererContentWithAWS": false,
+  "chat.greeting.enabled": false,
+  "chat.enablePromptHints": false,
+  "chat.enableTodoList": true,
+  "chat.enableThinking": true,
+  "chat.enableCheckpoint": true,
+  "chat.enableCodeIntelligence": true,
+  "chat.autoExpandToolOutput": true,
+  "chat.enableKnowledge": true,
+  "knowledge.indexType": "Best",
   "toolSearch.enabled": true,
   "toolSearch.minPct": 5,
-  "toolSearch.minTokens": 50000
+  "toolSearch.minTokens": 50000,
+  "mcp.loadedBefore": true,
+  "cleanup.periodDays": "7d"
 }

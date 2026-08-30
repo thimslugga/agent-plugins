@@ -1,5 +1,16 @@
 {
   "languages": {
+    "markdown": {
+      "name": "rumdl",
+      "command": "rumdl",
+      "args": ["server"],
+      "file_extensions": ["md", "markdown"],
+      "project_patterns": [".rumdl.toml", ".markdownlint.yml"],
+      "exclude_patterns": [],
+      "multi_workspace": false,
+      "initialization_options": {},
+      "request_timeout_secs": 60
+    },
     "ruby": {
       "name": "solargraph",
       "command": "solargraph",
@@ -30,7 +41,7 @@
       "name": "pyright",
       "command": "pyright-langserver",
       "args": ["--stdio"],
-      "file_extensions": ["py"],
+      "file_extensions": ["py", "pyi"],
       "project_patterns": [
         "pyproject.toml",
         "setup.py",
@@ -39,9 +50,11 @@
       ],
       "exclude_patterns": [
         "**/__pycache__/**",
-        "**/venv/**",
         "**/.venv/**",
-        "**/.pytest_cache/**"
+        "**/venv/**",
+        "**/.pytest_cache/**",
+        "**/.ruff_cache/**",
+        "**/.mypy_cache/**"
       ],
       "multi_workspace": false,
       "initialization_options": {},

@@ -180,10 +180,11 @@ worktrees/
 *.swp
 
 # PyCharm
-.idea/
+.idea/*
 
 # VS Code
-.vscode/
+.vscode/*
+!.vscode/settings.json
 
 # Visual Studio Code
 #   Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
@@ -195,10 +196,10 @@ worktrees/
 tempCodeRunnerFile.py
 
 # Zed
-.zed/
+.zed/*
 
 # Kiro
-.kiro/
+.kiro/*
 !.kiro/agents
 !.kiro/skills
 !.kiro/specs
@@ -206,5 +207,12 @@ tempCodeRunnerFile.py
 
 # Claude Code
 CLAUDE.local.md
-.claude/
+.claude/*
+!.claude/settings.json
 .claude/settings.local.json
+
+# Codex
+.codex/
+
+# agents
+.agents/

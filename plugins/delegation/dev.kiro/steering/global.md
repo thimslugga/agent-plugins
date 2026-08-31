@@ -26,8 +26,8 @@ The orchestrator chooses between three execution modes based on task scope and r
 | Ad-Hoc Delegation     | Bulk log parsing, broad repo search, 1-shot parallel subtasks across modules.   | Apply `delegation-core` (`ai/delegation/core.md`). Spawn `worker-cheap` or `worker-standard` with `[WORKER-BRIEF v1]`.                          |
 | Digital Team Pipeline | New feature requests, complex multi-component changes, strict TDD requirements. | Apply `digital-team` (`ai/digital-team/workflow.md`). 5-step pipeline: Feature Plan → Plan Challenge → TDD Worker → Code Reviewer → Dual Loops. |
 
-- Shared tier worker definitions live in `ai/agents/`.
-- Runtime mechanics and tier→model mappings live in `delegation/adapters/`.
+- Shared tier worker definitions live in `agents/`.
+- Runtime mechanics and tier→model mappings live in `adapters/`.
 
 ## Asynchronous Tasks & Background Execution
 

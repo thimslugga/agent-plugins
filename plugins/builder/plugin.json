@@ -12,16 +12,13 @@
   "repository": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/builder",
   "license": "MIT",
   "keywords": [
-    "ai",
-    "ai-agents",
-    "skills",
-    "agent-plugins",
-    "mcp",
-    "a2a",
-    "multi-agent",
-    "tool-use",
-    "hooks",
-    "steering"
+    "builder",
+    "coding standards",
+    "code conventions",
+    "security review",
+    "mermaid",
+    "project structure",
+    "architecture"
   ],
   "extensions": {
     "dev.kiro": {

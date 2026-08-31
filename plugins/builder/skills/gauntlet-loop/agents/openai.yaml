@@ -1,0 +1,3 @@
+interface:
+  display_name: "Gauntlet Loop"
+  short_description: "Turn the user's goal into one short prompt they can paste into a fresh agent session."

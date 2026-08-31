@@ -1,6 +1,9 @@
 ---
 name: i-have-adhd
-description: 'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
+description: >-
+  Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, 
+  suppress tangents, give specific time estimates, make wins visible. 
+  Use when user invokes /i-have-adhd, $i-have-adhd, user says "adhd mode"; stays on until user says "stop adhd mode".
 license: MIT
 metadata:
   disable-model-invocation: true

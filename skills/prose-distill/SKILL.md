@@ -1,19 +1,19 @@
 ---
 name: prose-distill
-description: "Prose distill: condense verbose text to its essence. Use when asked to condense, tighten, shorten, reduce verbosity, or omit needless words while preserving substance."
+description: >-
+  Condense verbose text to its essence. 
+  Use when asked to condense, tighten, shorten, reduce verbosity, or omit needless words while preserving substance.
 args: "[text or file path]"
-allowed-tools: Read, Edit, Write, Grep, Glob, TodoWrite
-argument-hint: <text to distill> or <path to file>
-created: 2026-02-14
-modified: 2026-02-14
-reviewed: 2026-02-14
+metadata:
+  allowed-tools: Read, Edit, Write, Grep, Glob, TodoWrite
+  argument-hint: <text to distill> or <path to file>
 ---
 
-# /prose:distill
+# Prose Distill
 
 Distill verbose text to its concentrated essence — the art of compression without loss.
 
-## When to Use This Skill
+## When to Use
 
 | Use this skill when... | Use something else when... |
 |------------------------|---------------------------|

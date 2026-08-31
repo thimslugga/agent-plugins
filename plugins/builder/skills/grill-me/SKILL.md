@@ -1,7 +1,9 @@
 ---
 name: grill-me
 description: >-
-  Structured questioning to reach shared understanding before action. Walks the decision tree one branch at a time, checks memory for already-answered questions, saves every answer as a lesson. Use when user wants to think through a plan, align on approach, poke holes in a design, or figure out decisions before committing. Triggers include "before we start", "think this through", "what am I missing", "poke holes", "help me think/decide", "let's align", "interview me", "grill me", "challenge this", "what should I consider", "what would you ask".
+  Structured questioning to reach shared understanding before action. Walks the decision tree one branch at a time, checks memory for already-answered questions, saves every answer as a lesson.
+  Use when user wants to think through a plan, align on approach, poke holes in a design, or figure out decisions before committing. 
+  Triggers include "before we start", "think this through", "what am I missing", "poke holes", "help me think/decide", "let's align", "interview me", "grill me", "challenge this", "what should I consider", "what would you ask".
 ---
 
 # Grill Me

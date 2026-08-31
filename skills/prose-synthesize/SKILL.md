@@ -1,19 +1,19 @@
 ---
 name: prose-synthesize
-description: "Prose synthesize: turn unstructured notes into a structured, actionable plan. Use when given brain dumps, stream-of-consciousness, or scattered thoughts needing order."
-args: "[prose to synthesize]"
-allowed-tools: Read, Edit, Write, Grep, Glob, TodoWrite
-argument-hint: <unstructured thoughts or file path>
-created: 2026-02-16
-modified: 2026-02-16
-reviewed: 2026-02-16
+description: >-
+  Turn unstructured notes into a structured, actionable plan.
+  Use when given brain dumps, stream-of-consciousness, or scattered thoughts needing order.
+metadata:
+  args: "[prose to synthesize]"
+  allowed-tools: Read, Edit, Write, Grep, Glob, TodoWrite
+  argument-hint: <unstructured thoughts or file path>
 ---
 
-# /prose:synthesize
+# Prose Synthesize
 
 Synthesize unstructured thinking into a structured, actionable plan — impose order on chaos.
 
-## When to Use This Skill
+## When to Use
 
 | Use this skill when... | Use something else when... |
 |------------------------|---------------------------|

@@ -1,7 +1,8 @@
 ---
 name: handoff
 description: >-
-  "Compacts the current conversation into a handoff document so a fresh agent can continue the work in a new session."
+  Compacts the current conversation into a handoff document so a fresh agent can continue the work in a new session.
+  Use when user invokes /handoff, $handoff, or user says "handoff document", "create handoff document".
 metadata:
   disable-model-invocation: true
 ---
@@ -10,7 +11,7 @@ metadata:
 
 Compacts the current conversation into a handoff document so a fresh agent can continue the work in a new session.
 
-## When to use
+## When to Use
 
 - The conversation is long and the work needs to continue in a fresh session
 - Handing the current task to another agent (or another person's agent) that
@@ -18,7 +19,7 @@ Compacts the current conversation into a handoff document so a fresh agent can c
 - Preserving hard-won context - decisions made, dead ends explored, current
   state - before it is lost to context compaction
 
-## When not to use
+## When Not to Use
 
 - The work is finished; write a commit message, PR description, or docs
   instead

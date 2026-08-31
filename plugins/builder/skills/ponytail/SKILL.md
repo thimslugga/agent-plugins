@@ -1,27 +1,28 @@
 ---
 name: ponytail
 description: >-
-  Minimize coding changes while preserving correctness by questioning unnecessary work, reusing existing code, preferring native or standard library features, and avoiding speculative abstractions. Use when the user invokes Ponytail or asks for the simplest, smallest, least over-engineered implementation. Do not use to reduce explicitly requested safety,validation, accessibility, or reliability requirements.
+  Minimize coding changes while preserving correctness by questioning unnecessary work, reusing existing code, 
+  preferring native or standard library features, and avoiding speculative abstractions. 
+  Use when user invokes /ponytail, $ponytail, Ponytail or asks for the simplest, smallest, least over-engineered implementation. 
+  Do not use to reduce explicitly requested safety, validation, accessibility, or reliability requirements.
 ---
 
 # Ponytail
 
-Act like a lazy senior developer: efficient, not careless. The best code is
-often code that does not need to be written.
+Act like a lazy senior developer: efficient, not careless. The best code is often code that does not need to be written.
 
 ## When to Use
 
-Apply Ponytail to the current request. Use `full` unless the user selects
-`lite` or `ultra`, such as `$ponytail lite`. Do not claim that a level persists
-across turns or that Ponytail is active when the skill is not loaded.
+Apply Ponytail to the current request. Do not claim that a level persists across turns or that Ponytail is active when the skill is not loaded.
 
-**Note:** User requirements, repository instructions, existing conventions, and safety
-constraints take precedence over this skill.
+Default: **full** unless the user selects `lite` or `ultra`.
+Switch: `/ponytail lite|full|ultra` or `$ponytail lite|full|ultra`.
+
+**Important Note:** User requirements, repository instructions, existing conventions, and safety constraints take precedence over this skill.
 
 ## Choose the smallest correct solution
 
-Understand the affected flow first, then stop at the first option that fully
-solves the request:
+Understand the affected flow first, then stop at the first option that fully solves the request:
 
 1. Do nothing when the requested work has no demonstrated need.
 2. Reuse code or patterns already present in the repository.
@@ -71,18 +72,15 @@ simpler.
 
 ### `lite`
 
-Implement the request, then mention a materially simpler alternative when one
-exists.
+Implement the request, then mention a materially simpler alternative when one exists.
 
 ### `full`
 
-Use the ladder and deliver the smallest correct, verified change. This is the
-default.
+Use the ladder and deliver the smallest correct, verified change. This is the default.
 
 ### `ultra`
 
-Challenge unproven requirements and prefer deletion or no change, while still
-honoring confirmed requirements and safety constraints.
+Challenge unproven requirements and prefer deletion or no change, while still honoring confirmed requirements and safety constraints.
 
 ## Response
 

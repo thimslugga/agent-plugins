@@ -1,6 +1,6 @@
 # ASD-STE100 Skill — Simplified Technical English for Agent Output
 
-An agent skill that rewrites dense, ambiguous English into [ASD-STE100 Simplified Technical English](https://www.asd-ste100.org/) (STE) — the controlled-language standard the aerospace and defense industry built so aircraft maintenance instructions cannot be misread.
+A Claude Code skill that rewrites dense, ambiguous English into [ASD-STE100 Simplified Technical English](https://www.asd-ste100.org/) (STE) — the controlled-language standard the aerospace and defense industry built so aircraft maintenance instructions cannot be misread.
 
 This skill repurposes that same discipline for a different reader: an **AI agent** parsing another agent's output, a tool description, an error message, or an inter-agent instruction, with no human in the loop to resolve ambiguity.
 
@@ -12,16 +12,16 @@ An LLM agent parsing another agent's output is in a strikingly similar position 
 
 ## Before / After
 
-| Before                                                                                                                                                                                                                                                                       | After                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Before | After |
+|---|---|
 | "This tool will attempt to synchronize state across the various backends that have been configured, and if a conflict is detected it may resolve it automatically depending on the strategy that has been set, or otherwise it will surface the conflict for manual review." | "The tool synchronizes state across the configured backends. If it finds a conflict, it checks the current strategy. If the strategy allows automatic resolution, the tool resolves the conflict. If not, the tool reports the conflict for manual review." |
-| "An error may have occurred while processing your request due to a possible mismatch in the expected data format, which could be caused by an outdated client version."                                                                                                      | "The request failed. The data format did not match what the server expected. Check your client version — an outdated client is the most common cause."                                                                                                      |
+| "An error may have occurred while processing your request due to a possible mismatch in the expected data format, which could be caused by an outdated client version." | "The request failed. The data format did not match what the server expected. Check your client version — an outdated client is the most common cause." |
 
-More examples, including illustrations of the official STE rules themselves, in [`references/before-after.md`](references/before-after.md).
+More examples, including illustrations of the official STE rules themselves, in [`examples/before-after.md`](examples/before-after.md).
 
 ## What This Skill Does
 
-1. Picks a mode — **Strict** for procedures, error messages, and tool descriptions; **STE-flavored** for READMEs, PR descriptions, and explanatory prose, which keeps the sentence discipline but not the fixed-vocabulary lockdown.
+1. Picks a mode. **Strict** covers procedures, error messages, and tool descriptions. **STE-flavored** covers READMEs, PR descriptions, and explanatory prose. STE-flavored keeps the sentence discipline but not the fixed-vocabulary lockdown.
 2. Reads the input English text for meaning.
 3. Flags every rule violation sentence-by-sentence: ambiguous word choice, present-perfect/complex tense, passive voice with an unclear actor, multi-instruction sentences, oversized noun clusters, dropped words, sentences over length, phrasal verbs, nominalized actions, semicolons, hedge stacks, and marketing adjectives.
 4. Rewrites each flagged sentence — without dropping any fact, condition, or scope qualifier from the original. If a shorter phrasing would lose required precision, it keeps the longer phrasing and flags the trade-off instead of silently simplifying.
@@ -35,17 +35,39 @@ It does **not** reproduce ASD's official ~900-word approved dictionary. The stan
 
 Full rule summary and citations: [`references/writing-rules.md`](references/writing-rules.md).
 
+## Installation
+
+### Quick Install (npx skills)
+
+The fastest way to install this skill is the [skills CLI](https://skills.sh/) — no clone, no path setup. Run it from your project root:
+
+```bash
+npx skills add danyuchn/asd-ste100-skill
+```
+
+This pulls the skill from the GitHub repo and installs it for the current project. The CLI sends anonymous install telemetry (skill name and timestamp, no personal or device information) to help rank skills on the skills.sh leaderboard. Set `DISABLE_TELEMETRY=1` to opt out.
+
+Update later with `npx skills update`.
+
+### Clone
+
+```bash
+git clone https://github.com/danyuchn/asd-ste100-skill ~/.claude/skills/asd-ste100
+```
+
+This clones the repo into `~/.claude/skills/`, making the skill available in every Claude Code project. Best for contributors and anyone who wants a live checkout that updates with `git pull`.
+
 ## Usage
 
 Trigger with a request to simplify or clarify English text:
 
-```text
+```
 Disambiguate this tool description
 Rewrite this error message so an agent can't misparse it
 Apply ASD-STE100 to this instruction
 ```
 
-Or paste text and ask the agent to "disambiguate this" / "apply STE100 to this" / "reduce ambiguity in this output."
+Or paste text and ask Claude to "disambiguate this" / "apply STE100 to this" / "reduce ambiguity in this output."
 
 You get the rewritten text back and nothing else. To see which rules were applied, add "show the diff" or "explain the changes" to the request.
 
@@ -64,3 +86,7 @@ One limit worth stating up front: this fixes the form of a text, not its substan
 - [ASD Europe — Simplified Technical English](https://www.asd-europe.org/standards-specifications/simplified-technical-english/)
 - [Simplified Technical English — Wikipedia](https://en.wikipedia.org/wiki/Simplified_Technical_English)
 - [TechScribe — ASD-STE100 Simplified Technical English](https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm)
+
+## License
+
+MIT — see [LICENSE](LICENSE).

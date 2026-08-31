@@ -1,6 +1,8 @@
 ---
 name: economist-style
-description: Apply The Economist style guide to written content. Use when editing markdown, HTML, documentation, or any written text that needs professional editing for clarity, precision, and brevity. Detects weasel words, fillers, passive voice, and style issues.
+description: >-
+  Apply The Economist style guide to written content. Detects weasel words, fillers, passive voice, and style issues.
+  Use when editing markdown, HTML, documentation, or any written text that needs professional editing for clarity, precision, and brevity. 
 ---
 
 # The Economist Style Guide
@@ -41,9 +43,11 @@ In the spirit of the guide's introduction:
 When reviewing text, follow this sequence:
 
 ### 0. Load the Signature Rules
+
 Read `reference/ECONOMIST-SIGNATURE.md` first — a one-page distillation of the rules that make copy recognizably Economist (numbers, dates, commas, quotes, honorifics, headings). Most reviews need only this plus the quick checks below; load the detailed files only when a deeper check is warranted.
 
 ### 1. Detect Document Dialect
+
 **IMPORTANT**: Before making any suggestions, detect the document's existing spelling dialect:
 - Look for spellings like "colour" vs "color", "organise" vs "organize"
 - Check date formats (1st January vs January 1st)
@@ -51,11 +55,13 @@ Read `reference/ECONOMIST-SIGNATURE.md` first — a one-page distillation of the
 - **Match the document's existing conventions** - do not impose a dialect
 
 ### 2. Structural Review
+
 - Check for buried ledes (main point should come first)
 - Verify logical flow and argument structure
 - Ensure each paragraph has a clear purpose
 
 ### 3. Clarity Analysis
+
 For detailed passive voice and clarity rules, read `reference/CLARITY.md`
 
 Quick checks:
@@ -65,6 +71,7 @@ Quick checks:
 - Detect hedge words that weaken statements
 
 ### 4. Precision Check
+
 For detailed precision rules, read `reference/PRECISION.md`
 
 Quick checks:

@@ -1,6 +1,7 @@
 ---
 name: linus-review
-description: Review code the way Linus Torvalds reviews kernel patches — brutally honest, profane, zero tolerance for complexity theater, compatibility breakage, or performance regressions. Use this whenever the user asks for a harsh, brutal, savage, no-mercy, or "don't sugarcoat it" review, says "linus review" / "roast my code" / "tell me why this sucks", or wants an uncompromising second opinion on a patch, diff, PR, or design before they ship it. Expect strong language. Do NOT use for ordinary polite code review, for teaching beginners, or when the user just wants their code explained.
+description: >-
+  Review code the way Linus Torvalds reviews kernel patches — brutally honest, profane, zero tolerance for complexity theater, compatibility breakage, or performance regressions. Use this whenever the user asks for a harsh, brutal, savage, no-mercy, or "don't sugarcoat it" review, says "linus review" / "roast my code" / "tell me why this sucks", or wants an uncompromising second opinion on a patch, diff, PR, or design before they ship it. Expect strong language. Do NOT use for ordinary polite code review, for teaching beginners, or when the user just wants their code explained.
 ---
 
 # Linus Review

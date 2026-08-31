@@ -1,6 +1,70 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  // 100 is the Oxfmt default; Use 80 if migrating from Prettier.
   "printWidth": 100,
-  "ignorePatterns": [] // Same as `.prettierignore`
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "objectWrap": "preserve",
+  "endOfLine": "lf",
+  "insertFinalNewline": true,
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "css",
+  "embeddedLanguageFormatting": "auto",
+  "singleAttributePerLine": false,
+  "vueIndentScriptAndStyle": false,
+  "sortPackageJson": true,
+  "sortImports": {
+    "order": "asc",
+    "ignoreCase": true,
+    "newlinesBetween": true,
+    "sortSideEffects": false,
+    "internalPattern": ["~/", "@/", "#"],
+    "groups": [
+      "builtin",
+      "external",
+      ["internal", "subpath"],
+      ["parent", "sibling", "index"],
+      "style",
+      "unknown"
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "printWidth": 80,
+        "proseWrap": "preserve"
+      }
+    },
+    {
+      "files": ["*.json", "*.jsonc", "*.json5", "*.yml", "*.yaml"],
+      "options": {
+        "singleQuote": false
+      }
+    },
+    {
+      "files": ["*.{test,spec}.{js,mjs,cjs,ts,tsx}"],
+      "options": {
+        "printWidth": 120
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/tests/**",
+    "**/dist/**",
+    "**/*.min.js",
+    "**/*.bundle.js",
+    "**/CHANGELOG.md",
+    "pnpm-lock.yaml",
+    "package-lock.json"
+  ]
 }

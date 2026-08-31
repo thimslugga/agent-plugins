@@ -1,9 +1,7 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = []
-# ///
+#!/usr/bin/env python3
 
-"""Scaffold a new skill directory with correct SKILL.md template."""
+"""Scaffold a new skill directory with correct SKILL.md template.
+"""
 
 import re
 import sys

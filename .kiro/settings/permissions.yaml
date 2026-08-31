@@ -1,3 +1,5 @@
+# permissions.yaml
+
 rules:
   # Block all tools that read files from accessing secrets
   - capability: fs_read

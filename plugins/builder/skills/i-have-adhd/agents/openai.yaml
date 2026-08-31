@@ -1,0 +1,5 @@
+interface:
+  display_name: "I have ADHD"
+  short_description: "Output is not just brief, it's shaped so an ADHD brain can act on it."
+policy:
+  allow_implicit_invocation: false

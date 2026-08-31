@@ -1,3 +1,7 @@
+---
+inclusion: always
+---
+
 # Architecture
 
 ## Design Principles

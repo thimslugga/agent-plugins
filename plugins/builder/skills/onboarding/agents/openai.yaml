@@ -1,0 +1,5 @@
+interface:
+  display_name: "Onboarding"
+  short_description: "Compact the current conversation into a handoff document."
+policy:
+  allow_implicit_invocation: false

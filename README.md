@@ -4,6 +4,8 @@ Personal agent plugins
 
 ## Overview
 
+![](https://imgs.xkcd.com/comics/standards.png)
+
 ## Project layout
 
 ```text

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "builder",
+  "version": "1.0.0",
+  "description": "Agent Plugin for Builders",
+  "author": {
+    "name": "Adam Kaminski",
+    "email": "adam@adamkaminski.com",
+    "url": "https://github.com/thimslugga"
+  },
+  "homepage": "https://github.com/thimslugga/agent-plugins/blob/main/plugins/builder/README.md",
+  "repository": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/builder",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "ai-agents",
+    "skills",
+    "agent-plugins",
+    "mcp",
+    "a2a",
+    "multi-agent",
+    "tool-use",
+    "hooks",
+    "steering"
+  ],
+  "extensions": {
+    "dev.kiro": {
+      "hooks": true,
+      "steering": true
+    },
+    "com.github.pilot": {
+      "hooks": true
+    }
+  }
+}

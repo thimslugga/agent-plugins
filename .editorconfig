@@ -65,12 +65,8 @@ indent_style = space
 indent_size = 4
 
 [*.{pl,pm}]
-charset = utf-8
-end_of_line = lf
 indent_style = space
 indent_size = 4
-trim_trailing_whitespace = true
-insert_final_newline = true
 
 [*.{js,jsx,bun,coffee}]
 indent_style = space
@@ -107,7 +103,11 @@ end_of_line = unset
 indent_style = tab
 indent_size = 4
 
-[*.{json,jsonc,json5}]
+[*.{bazel,bzl}]
+indent_size = 4
+indent_style = space
+
+[*.{json,jsonc,jsonl,json5}]
 indent_style = space
 indent_size = 2
 
@@ -116,10 +116,6 @@ indent_style = space
 indent_size = 2
 
 [*.{yaml,yml,yamllint,ansible-lint,butane,bu}]
-indent_style = space
-indent_size = 2
-
-[*.{json,jsonc}]
 indent_style = space
 indent_size = 2
 
@@ -145,10 +141,6 @@ indent_size = 2
 [*.{pkr.hcl,pkr.hcl.json}]
 indent_style = space
 indent_size = 2
-
-[*.{bazel,bzl}]
-indent_size = 4
-indent_style = space
 
 [*.{csv,tsv}]
 indent_style = space

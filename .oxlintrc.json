@@ -1,1 +1,55 @@
-{}
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "extends": ["./packages/tools/oxc/oxlintrc.json"],
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "jsdoc",
+    "node",
+    "promise"
+  ],
+  "categories": {
+    "correctness": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "no-console": "error",
+    "curly": ["error", "multi-line"],
+    "prefer-const": ["error", { "destructuring": "all" }],
+    "prefer-destructuring": [
+      "error",
+      {
+        "VariableDeclarator": { "array": false, "object": true }
+      }
+    ],
+    "unicode-bom": ["error", "never"],
+    "typescript/consistent-indexed-object-style": ["error", "record"],
+    "typescript/ban-ts-comment": [
+      "error",
+      { "ts-expect-error": "allow-with-description" }
+    ]
+  },
+  "overrides": [],
+  "ignorePatterns": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/docs",
+    "**/*.tsbuildinfo",
+    "**/CHANGELOG.md",
+    "!.agents",
+    "!.agents/**/*",
+    "!.github",
+    "!.github/**/*",
+    "!.gitignore",
+    "!.oxlintrc.json",
+    "!.vscode",
+    "!.vscode/**/*"
+  ],
+  "options": {
+    "typeAware": true,
+    "typeCheck": true
+  }
+}

@@ -1,5 +1,6 @@
 ---
-inclusion: auto
+inclusion: fileMatch
+fileMatchPattern: ["**/*.md", "**/*.mmd"]
 ---
 
 # Mermaid Diagram Standards
@@ -91,12 +92,12 @@ When writing Mermaid diagrams in markdown files (design docs, specs, READMEs), f
 
 ## Quick Reference — Safe Characters
 
-| Location | Safe | Unsafe |
-|---|---|---|
-| Node labels | letters, numbers, spaces | `:` `/` `()` `{}` `<br/>` backticks |
-| Edge labels | letters, spaces | `-` `_` `/` `,` `()` `{}` |
-| Sequence messages | letters, spaces | `()` `{}` `,` `_` `-` `/` `Note over` |
-| Subgraph labels | letters, numbers, spaces | quotes with special chars, nested subgraphs |
+| Location          | Safe                     | Unsafe                                      |
+| ----------------- | ------------------------ | ------------------------------------------- |
+| Node labels       | letters, numbers, spaces | `:` `/` `()` `{}` `<br/>` backticks         |
+| Edge labels       | letters, spaces          | `-` `_` `/` `,` `()` `{}`                   |
+| Sequence messages | letters, spaces          | `()` `{}` `,` `_` `-` `/` `Note over`       |
+| Subgraph labels   | letters, numbers, spaces | quotes with special chars, nested subgraphs |
 
 ## Examples
 

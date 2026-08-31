@@ -23,13 +23,5 @@
     "hooks",
     "steering"
   ],
-  "extensions": {
-    "dev.kiro": {
-      "hooks": true,
-      "steering": true
-    },
-    "com.github.pilot": {
-      "hooks": true
-    }
-  }
+  "extensions": {}
 }

@@ -1,6 +1,7 @@
 ---
 name: ponytail
-description: Minimize coding changes while preserving correctness by questioning unnecessary work, reusing existing code, preferring native or standard library features, and avoiding speculative abstractions. Use when the user invokes Ponytail or asks for the simplest, smallest, least over-engineered implementation. Do not use to reduce explicitly requested safety,validation, accessibility, or reliability requirements.
+description: >-
+  Minimize coding changes while preserving correctness by questioning unnecessary work, reusing existing code, preferring native or standard library features, and avoiding speculative abstractions. Use when the user invokes Ponytail or asks for the simplest, smallest, least over-engineered implementation. Do not use to reduce explicitly requested safety,validation, accessibility, or reliability requirements.
 ---
 
 # Ponytail

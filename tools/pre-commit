@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Skip if no remote tracking branch
+git rev-parse --abbrev-ref @{upstream} &>/dev/null || exit 0
+
+echo "Checking Current Branch State"
+git fetch --quiet
+
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse @{upstream})
+
+# Already up to date
+[ "$LOCAL" = "$REMOTE" ] && exit 0
+
+BASE=$(git merge-base @ @{upstream})
+
+# Local is ahead — fine to commit
+[ "$REMOTE" = "$BASE" ] && exit 0
+
+# Diverged — block
+[ "$LOCAL" != "$BASE" ] && [ "$REMOTE" != "$BASE" ] && {
+  echo "❌ Branch has diverged from origin. Run 'git pull --rebase' and resolve conflicts before committing."
+  exit 1
+}
+
+# Local is behind — auto-rebase
+if [ "$LOCAL" = "$BASE" ]; then
+  echo "⏬ Auto-pulling latest from origin..."
+  STASH_BEFORE=$(git stash list | wc -l)
+  git stash push -q --include-untracked -m "pre-commit-hook"
+  STASH_AFTER=$(git stash list | wc -l)
+  STASHED=$([[ "$STASH_AFTER" -gt "$STASH_BEFORE" ]] && echo 1 || echo 0)
+  if git rebase --quiet @{upstream}; then
+    if [ "$STASHED" = "1" ]; then
+      if ! git stash pop -q 2>/dev/null; then
+        echo "⚠️  Updated branch but stash pop had conflicts. Resolve them, re-stage, and commit again."
+        exit 1
+      fi
+    fi
+    echo "✅ Updated to $(git rev-parse --short @). Re-run your commit."
+    exit 1
+  else
+    git rebase --abort
+    [ "$STASHED" = "1" ] && git stash pop -q 2>/dev/null
+    echo "❌ Auto-rebase failed. Run 'git pull --rebase' manually."
+    exit 1
+  fi
+fi

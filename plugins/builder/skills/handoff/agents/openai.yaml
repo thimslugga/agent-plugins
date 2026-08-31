@@ -1,0 +1,6 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Compact the current conversation into a handoff document."
+  default_prompt: "Create a handoff document summarising the current conversation so a fresh agent can continue the work"
+policy:
+  allow_implicit_invocation: false

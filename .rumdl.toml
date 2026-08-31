@@ -1,0 +1,101 @@
+# .rumdl.toml
+
+# Global configuration options
+[global]
+# Include only specific files
+include = [
+    "README.md",
+    "DEVELOPMENT.md",
+    "skills/**/SKILL.md",
+    "docs/**/*.md",
+    "**/*.md",
+]
+# Exclude files and directories
+exclude = [
+    ".git",
+    ".svn",
+    ".hg",
+    "vendor",
+    "node_modules",
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+    "*.tmp.md",
+    "docs/generated/**",
+    "docs/adr/**",
+    "docs/rfc/**",
+]
+
+respect-gitignore = true
+
+# Set markdown flavor (standard, gfm, mkdocs, mdx, pandoc, quarto, obsidian, kramdown, azure_devops)
+flavor = "github"
+
+# Set global line length (used by MD013 and other line-length rules)
+line-length = 1000
+
+[MD013]
+line-length = 1000
+code-blocks = true
+tables = false
+headings = true
+reflow = true
+
+[MD029]
+style = "ordered"
+
+[MD046]
+# Code block style
+style = "fenced"
+
+[MD048]
+# Code fence style
+style = "backtick"
+
+[MD049]
+# Emphasis style (* or _)
+style = "asterisk"
+
+[MD050]
+# Strong emphasis style (** or __)
+style = "asterisk"
+
+[MD051]
+anchor-style = "github"
+
+[MD055]
+# Table pipe style (leading_and_trailing or no_leading_or_trailing)
+style = "leading_and_trailing"
+
+[MD060]
+enabled = true
+style = "aligned"
+
+[code-block-tools]
+enabled = true
+timeout = 60000 # 60 seconds
+
+[code-block-tools.languages]
+shell = { lint = ["shellcheck"], format = ["shfmt"] }
+python = { lint = ["ruff:check"], format = ["ruff:format"] }
+javascript = { lint = ["eslint"], format = ["prettier"] }
+typescript = { lint = ["eslint"], format = ["prettier"] }
+rust = { format = ["rustfmt"] }
+go = { format = ["gofmt"] }
+json = { lint = ["jq"], format = ["jq"] }
+plaintext = { enabled = false }
+text = { enabled = false }
+
+[code-block-tools.languages.markdown]
+lint = ["rumdl"]
+
+[code-block-tools.language-aliases]
+py = "python"
+py3 = "python"
+sh = "shell"
+bash = "shell"
+zsh = "shell"
+rs = "rust"
+go = "go"
+#jsonc = "json"

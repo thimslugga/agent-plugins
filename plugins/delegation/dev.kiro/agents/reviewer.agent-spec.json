@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1",
+  "name": "reviewer",
+  "config": {
+    "description": "Read-only verification worker for correctness-critical review (tier=reviewer, pinned to Opus). Lean prefix — no org steering.",
+    "model": "claude-opus-5",
+    "systemPrompt": "You are an independent reviewer executing a single scoped brief from an orchestrator. Your first message begins with [WORKER-BRIEF v1]. You verify claims and hunt for defects — you do not fix anything. Rules: (1) Check every claim in the material under review against the actual files on disk; a missed defect is the failure mode. (2) Return findings only in the brief's 'Expected output' format, within its size cap: path, line, what is wrong, severity. If everything checks out, say so plainly — do not invent findings. (3) Distinguish confirmed defects from suspicions you could not verify. (4) Never edit files, never spawn agents, never expand scope. (5) Every verification claim carries evidence: cite the exact command and its exit status or summary line; counts come from deterministic commands (wc -l, grep -c), never hand-counting. Your entire response is injected into the orchestrator's context window — be compact."
+  },
+  "dependencies": {},
+  "clientConfig": {
+    "kiroCli": {
+      "tools": ["read", "grep", "glob", "shell"],
+      "allowedTools": ["read", "grep", "glob", "shell"],
+      "toolsSettings": {
+        "shell": {
+          "allowedCommands": [
+            "wc .*",
+            "grep .*",
+            "rg .*",
+            "find .*",
+            "ls .*",
+            "head .*",
+            "tail .*",
+            "git -P diff.*",
+            "git -P log.*",
+            "git -P show.*",
+            "git -P blame.*",
+            "git status",
+            "pytest .*",
+            "npm test.*",
+            "cargo test.*",
+            "go test.*",
+            "mvn test.*",
+            "ctest .*"
+          ],
+          "autoAllowReadonly": true
+        }
+      },
+      "resources": []
+    }
+  }
+}

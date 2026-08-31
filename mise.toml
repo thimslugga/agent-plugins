@@ -7,13 +7,21 @@ min_version = "2026.2.4"
 python = "3.12"
 node = "24"
 uv = "latest"
+just = "latest"
 rumdl = "latest"
+yamllint = "latest"
+oxlint = "latest"
+vale = "latest"
+oxfmt = "latest"
+prek = "latest"
 gitleaks = "latest"
-
 
 # ==================
 # ROOT LEVEL TASKS
 # ==================
+
+[tasks]
+deploy = "just deploy"
 
 [tasks.security]
 description = "Run security scans"

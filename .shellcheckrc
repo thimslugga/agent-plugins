@@ -1,5 +1,6 @@
-# ShellCheck
+# .shellcheckrc - ShellCheck: https://www.shellcheck.net/wiki/
 
+# Default shell dialect
 shell=bash
 
 # Always allow ShellCheck to open arbitrary files from 'source' statements.

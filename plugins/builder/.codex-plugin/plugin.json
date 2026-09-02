@@ -1,0 +1,39 @@
+{
+  "name": "builder",
+  "version": "1.0.0",
+  "description": "Reusable agent skills and MCP integrations for architecture, engineering workflows, technical writing, research, and diagrams.",
+  "author": {
+    "name": "thimslugga"
+  },
+  "repository": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/builder",
+  "homepage": "https://github.com/thimslugga/agent-plugins/blob/main/plugins/builder/README.md",
+  "license": "MIT",
+  "keywords": [
+    "builder",
+    "coding standards",
+    "code conventions",
+    "security review",
+    "mermaid",
+    "project structure",
+    "architecture"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Builder",
+    "shortDescription": "Reusable skills and tools for building software.",
+    "longDescription": "Build and review software with reusable workflows for architecture decisions, RFCs, coding discipline, research, diagrams, technical writing, iterative improvement, and session handoffs. The plugin also provides MCP access to GitHub, Context7, AWS Knowledge, and Exa.",
+    "developerName": "thimslugga",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/builder",
+    "defaultPrompt": [
+      "Create an RFC for this feature before implementation.",
+      "Review this change for complexity and security risks.",
+      "Diagram this system architecture in Mermaid."
+    ]
+  }
+}

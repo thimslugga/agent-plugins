@@ -1,14 +1,15 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "builder",
+  "displayName": "Builder",
+  "description": "Reusable agent skills and MCP integrations for architecture, engineering workflows, technical writing, research, and diagrams.",
   "version": "1.0.0",
-  "description": "Agent Plugin for Builders",
-  "license": "MIT",
   "author": {
     "name": "thimslugga"
   },
   "repository": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/builder",
   "homepage": "https://github.com/thimslugga/agent-plugins/blob/main/plugins/builder/README.md",
+  "license": "MIT",
+  "category": "developer-tools",
   "keywords": [
     "builder",
     "coding standards",
@@ -18,14 +19,6 @@
     "project structure",
     "architecture"
   ],
-  "extensions": {
-    "dev.kiro": {
-      "hooks": true,
-      "steering": true
-    },
-    "com.github.pilot": {
-      "agents": true,
-      "hooks": true
-    }
-  }
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
 }

@@ -1,7 +1,5 @@
 # Google shell style guide
 
-Source: <https://google.github.io/styleguide/shellguide.html>
-
 This skill follows that guide. Below are the rules that actually change what
 gets written, plus the two places this skill deliberately goes further.
 
@@ -143,9 +141,8 @@ Two additions, neither of which contradicts the guide:
 
 ## Companion references
 
-- ShellCheck: <https://www.shellcheck.net/>
-- ShellCheck rule explanations, one wiki page per SC code:
-  <https://github.com/koalaman/shellcheck/wiki/>
-- Bash FAQ, Greg's Wiki, for the awkward corners of the language:
-  <http://mywiki.wooledge.org/BashFAQ>
 - OWASP command injection: see `references/security.md`
+- Source: <https://google.github.io/styleguide/shellguide.html>
+- ShellCheck: <https://www.shellcheck.net/>
+- ShellCheck rule explanations, one wiki page per SC code: <https://github.com/koalaman/shellcheck/wiki/>
+- Bash FAQ, Greg's Wiki, for the awkward corners of the language: <http://mywiki.wooledge.org/BashFAQ>

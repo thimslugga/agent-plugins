@@ -1,9 +1,10 @@
 ---
 name: shell-script-expert
 description: >-
-  
-  Use when the user asks "review this script", "write a bash script", "fix my shell script", "make this script safer", "why does this script fail", 
-  "convert this to a script", or working with .sh files, sh/bash/zsh syntax, shellcheck, cronjobs, systemd timers, and bash one-liners.
+  Use when the user asks "review this script", "write a bash script", "fix my
+  shell script", "make this script safer", "why does this script fail",
+  "convert this to a script", or working with .sh/.bash files, sh/bash syntax,
+  shellcheck, cronjobs, and bash one-liners.
 ---
 
 # Shell Script Expert
@@ -62,16 +63,16 @@ with `command -v` rather than assuming they exist. `references/portability.md`
 covers bash version gates, GNU versus BSD tool differences, and Amazon Linux
 2023 base images.
 
-Zsh is an interactive shell first. Write automation in bash even when the user
-lives in zsh, unless the script is explicitly a zsh plugin or `.zshrc`
-fragment.
-
 ## Step 3: Build from the template
 
 Copy `assets/template.sh` as the starting skeleton. It supplies the file
-header, strict mode, `usage`, stderr logging, `require_cmd`, `trap`-based
+header, strict mode, `usage`, stderr logging, `require_cmds`, `trap`-based
 cleanup, dry-run support, Google-style function header comments, and argument
 parsing that already handles `--` and unknown options correctly.
+
+Use `assets/boilerplate.sh` as a pattern catalogue, not as a file to copy
+whole. It intentionally contains independent examples that should be selected
+and trimmed to keep the resulting script small.
 
 Strip what the script does not need. An unused `--verbose` flag is noise, not
 safety.
@@ -83,13 +84,14 @@ This keeps the script usable inside a pipeline and keeps cron from mailing
 routine chatter.
 
 **Exit codes are an interface.** 0 for success, 1 for general failure, 2 for
-usage error. Leave 126 through 165 alone, since the shell and signals already
-own them.
+usage error. Leave 126 and 127 to the shell, and preserve `128 + signal` when
+handling signals.
 
-**Strict mode is a backstop, not error handling.** `set -Eeuo pipefail`
-belongs at the top of every script, and it silently declines to fire in
-several common situations. Read `references/strict-mode.md` before relying on
-it, particularly before writing `local var=$(command)`, piping into `head`, or
+**Strict mode is a backstop, not error handling.** Bash scripts use
+`set -Eeuo pipefail`; POSIX `sh` scripts use `set -eu` because `-E` and
+`pipefail` are not portable. These modes silently decline to fire in several
+common situations. Read `references/strict-mode.md` before relying on them,
+particularly before writing `local var=$(command)`, piping into `head`, or
 reading `$?` after `if ! command`.
 
 **Respect blast radius.** For anything that deletes, overwrites, restarts, or
@@ -152,6 +154,7 @@ For a script that misbehaves rather than fails, `set -x` narrows it fastest.
 ## Additional resources
 
 - **`assets/template.sh`**: production skeleton, copy and trim
+- **`assets/boilerplate.sh`**: extended pattern catalogue, select and trim
 - **`scripts/check.sh`**: syntax, lint, and format gate
 - **`references/google-style.md`**: the house style, and where this skill
   extends it

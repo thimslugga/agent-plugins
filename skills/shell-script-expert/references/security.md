@@ -58,15 +58,25 @@ esac
 ```
 
 Path arguments need their own check. Reject `..` and anything that leaves the
-expected directory, then compare the resolved path:
+expected directory, then compare the resolved path. Require a canonicalizer
+that exists on the target fleet rather than assuming GNU `readlink -f` is
+available:
 
 ```bash
+require_cmds realpath
+if [[ "${candidate}" != /* ]]; then
+  candidate="./${candidate}"
+fi
 local resolved
-resolved="$(readlink -f -- "${candidate}")"
+resolved="$(realpath "${candidate}")"
 if [[ "${resolved}" != "${ALLOWED_ROOT}"/* ]]; then
   die "path escapes ${ALLOWED_ROOT}: ${candidate}"
 fi
 ```
+
+`realpath` option support varies on older systems. If the target lacks a safe
+canonicalizer, handle the path in Python instead of approximating symlink
+resolution with `cd` and `pwd`.
 
 ## The environment is part of the attack surface
 

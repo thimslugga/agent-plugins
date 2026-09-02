@@ -1,4 +1,4 @@
-# Patterns
+# Shell Scripting Patterns
 
 Copy-ready solutions for recurring tasks, written in the Google shell style:
 2 space indent, braced variables, `(( ))` for numbers, arrays for lists.
@@ -235,13 +235,13 @@ while IFS='=' read -r key value; do
 done < "${config_file}"
 ```
 
-An allowlist means a hostile config cannot set `PATH` or `LD_PRELOAD`. See
+An allowlist means a hostile config cannot set `PATH` or `LD_PRELOAD`. See:
 `references/security.md`.
 
-## JSON
+## JSON data output
 
 ```bash
-require_cmd jq
+require_cmds jq
 local version
 version="$(jq -re '.version' < response.json)"
 ```
@@ -276,7 +276,7 @@ if [[ "${line}" =~ ^version:[[:space:]]*([0-9.]+) ]]; then
 fi
 ```
 
-## Here-documents
+## Bash here-documents
 
 ```bash
 # Quoted delimiter: nothing expands.

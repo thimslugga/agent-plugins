@@ -1,13 +1,12 @@
 #!/bin/bash
-#
-# One line describing what this script does.
-#
-# Usage: template.sh [OPTIONS] <target>...
-
 # Set here rather than in the shebang so that "bash template.sh" behaves the
 # same way. -E makes the ERR trap fire inside functions, which it does not do
 # by default.
 set -Eeuo pipefail
+
+# One line describing what this script does.
+#
+# Usage: template.sh [OPTIONS] <target>...
 
 readonly SCRIPT_NAME="${BASH_SOURCE[0]##*/}"
 
@@ -98,10 +97,10 @@ die_usage() {
 # Arguments:
 #   One or more command names.
 #######################################
-require_cmd() {
+require_cmds() {
   local cmd
   for cmd in "$@"; do
-    if ! command -v -- "${cmd}" > /dev/null 2>&1; then
+    if ! command -v -- "${cmd}" >/dev/null 2>&1; then
       die "required command not found: ${cmd}"
     fi
   done
@@ -117,9 +116,25 @@ require_cmd() {
 cleanup() {
   local rc=$?
   if [[ -n "${tmp_dir}" && -d "${tmp_dir}" ]]; then
-    rm -rf -- "${tmp_dir}"
+    rm -rf -- "${tmp_dir:?temporary directory is unset}"
   fi
   return "${rc}"
+}
+
+#######################################
+# Exit with the conventional status for a received signal.
+# Arguments:
+#   Signal name.
+#######################################
+on_signal() {
+  local signal_name="$1"
+  trap - ERR
+  warn "received SIG${signal_name}"
+  case "${signal_name}" in
+    INT) exit 130 ;;
+    TERM) exit 143 ;;
+    *) exit 1 ;;
+  esac
 }
 
 #######################################
@@ -177,11 +192,12 @@ process() {
 #######################################
 main() {
   trap cleanup EXIT
-  trap 'die "interrupted"' INT TERM
+  trap 'on_signal INT' INT
+  trap 'on_signal TERM' TERM
   trap on_err ERR
 
   local -a targets=()
-  while (( $# > 0 )); do
+  while (($# > 0)); do
     case "$1" in
       -h | --help)
         usage
@@ -210,11 +226,11 @@ main() {
     esac
   done
 
-  if (( ${#targets[@]} == 0 )); then
+  if ((${#targets[@]} == 0)); then
     die_usage 'expected at least one target'
   fi
 
-  require_cmd date
+  require_cmds date mktemp rm
 
   tmp_dir="$(mktemp -d)"
   debug "workspace: ${tmp_dir}"

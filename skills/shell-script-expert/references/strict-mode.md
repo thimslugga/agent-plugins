@@ -1,4 +1,4 @@
-# Strict mode, honestly
+# Bash Script Strict mode
 
 `set -Eeuo pipefail` raises the floor. It does not catch errors, it aborts on
 some of them. The gap between "some" and "all" is where the bugs live.

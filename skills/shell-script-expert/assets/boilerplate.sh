@@ -1,19 +1,4 @@
 #!/usr/bin/env bash
-#
-# boilerplate.sh - a starting point for production bash scripts.
-#
-# Usage:
-#   1. Copy this file, rename it, edit the METADATA block and main().
-#   2. Or source it as a library:  source /path/to/boilerplate.sh
-#      (the "main" block at the bottom only runs when executed directly)
-#
-# Requires: bash 4.2+ (associative arrays, printf %(fmt)T, exec {fd}>)
-# Tested on: Amazon Linux 2023 (bash 5.2), Debian 12, Fedora 40
-#
-# Lint with:   shellcheck -x boilerplate.sh
-# Format with: shfmt -i 2 -ci -bn -w boilerplate.sh
-#
-
 # ---------------------------------------------------------------------------
 # SECTION 0: STRICT MODE AND SHELL OPTIONS
 # ---------------------------------------------------------------------------
@@ -34,12 +19,22 @@
 #     condition is false, which also kills the script. End with `return 0`.
 set -Eeuo pipefail
 
-# Word splitting only on newline and tab, never on plain spaces.
-# This stops "$var" containing spaces from silently becoming two arguments.
-# Trade-off: `read -ra parts <<< "a b c"` will no longer split on spaces.
-# If you need space splitting in one spot, set IFS locally:
-#   local IFS=' '; read -ra parts <<< "$line"
-IFS=$'\n\t'
+# ---------------------------------------------------------------------------
+# SECTION 0 (continued): NAME, DESCRIPTION, USAGE and REQUIREMENTS
+# ---------------------------------------------------------------------------
+# boilerplate.sh - a starting point for production bash scripts.
+#
+# Usage:
+#   1. Copy this file, rename it, edit the METADATA block and main().
+#   2. Or source it as a library:  source /path/to/boilerplate.sh
+#      (the "main" block at the bottom only runs when executed directly)
+#
+# Requires: bash 4.2+ (associative arrays, printf %(fmt)T, exec {fd}>)
+# Tested on: Amazon Linux 2023 (bash 5.2), Debian 12, Fedora 40
+#
+# Lint with:   shellcheck -x boilerplate.sh
+# Format with: shfmt -i 2 -ci -bn -w boilerplate.sh
+#
 
 # nullglob    : an unmatched glob expands to nothing instead of the literal "*.txt"
 # extglob     : enables !(...), +(...), @(...) pattern matching
@@ -58,30 +53,31 @@ fi
 # second `readonly` assignment would raise an error.
 if [[ -z ${SCRIPT_DIR:-} ]]; then
   _self="${BASH_SOURCE[0]}"
-  while [[ -L $_self ]]; do
-    _dir=$(cd -P -- "$(dirname -- "$_self")" && pwd)
-    _self=$(readlink -- "$_self")
-    [[ $_self != /* ]] && _self="$_dir/$_self"
+  while [[ -L ${_self} ]]; do
+    _dir=$(cd -P -- "$(dirname -- "${_self}")" && pwd)
+    _self=$(readlink -- "${_self}")
+    [[ ${_self} != /* ]] && _self="${_dir}/${_self}"
   done
   # Assign first, mark readonly second. `readonly X="$(cmd)"` would hide a
   # failing command substitution behind readonly's own exit status.
-  _dir=$(cd -P -- "$(dirname -- "$_self")" && pwd) || exit 1
-  readonly SCRIPT_DIR="$_dir"
-  readonly SCRIPT_NAME="$(basename -- "$_self")"
+  _dir=$(cd -P -- "$(dirname -- "${_self}")" && pwd) || exit 1
+  readonly SCRIPT_DIR="${_dir}"
+  _script_name="$(basename -- "${_self}")"
+  readonly SCRIPT_NAME="${_script_name}"
   readonly SCRIPT_VERSION="1.0.0"
-  unset _dir _self
+  unset _dir _script_name _self
 fi
 
 # Runtime flags. All can be overridden by the environment or by CLI options.
-LOG_LEVEL="${LOG_LEVEL:-INFO}"   # DEBUG | INFO | WARN | ERROR | FATAL
-LOG_FILE="${LOG_FILE:-}"         # empty means stderr only
-DRY_RUN="${DRY_RUN:-0}"          # 1 = print commands instead of running them
-ASSUME_YES="${ASSUME_YES:-0}"    # 1 = answer yes to every confirm() prompt
-NO_COLOR="${NO_COLOR:-}"         # any non-empty value disables colour
-declare -a ARGS=()               # positional arguments left after parsing
+LOG_LEVEL="${LOG_LEVEL:-INFO}" # DEBUG | INFO | WARN | ERROR | FATAL
+LOG_FILE="${LOG_FILE:-}"       # empty means stderr only
+DRY_RUN="${DRY_RUN:-0}"        # 1 = print commands instead of running them
+ASSUME_YES="${ASSUME_YES:-0}"  # 1 = answer yes to every confirm() prompt
+NO_COLOR="${NO_COLOR:-}"       # any non-empty value disables colour
+declare -a ARGS=()             # positional arguments left after parsing
 
 # Internal state. Underscore prefix means "do not touch from outside".
-declare -a _CLEANUP_STACK=()
+declare -a _TEMP_PATHS=()
 _TMP_ROOT=""
 _LOCK_FD=""
 _LOCK_FILE=""
@@ -92,7 +88,7 @@ _LOCK_FILE=""
 # Colour is only emitted when stderr is a real terminal and NO_COLOR is unset.
 # This keeps log files, pipes and CI output clean of escape codes.
 setup_colors() {
-  if [[ -t 2 && -z $NO_COLOR && ${TERM:-dumb} != "dumb" ]]; then
+  if [[ -t 2 && -z ${NO_COLOR} && ${TERM:-dumb} != "dumb" ]]; then
     C_RESET=$'\033[0m'
     C_RED=$'\033[0;31m'
     C_GREEN=$'\033[0;32m'
@@ -124,12 +120,10 @@ declare -A _LOG_LEVELS=([DEBUG]=10 [INFO]=20 [WARN]=30 [ERROR]=40 [FATAL]=50)
 log() {
   local level="${1^^}"
   shift
-  # IFS is $'\n\t' globally, so "$*" would join arguments with a newline.
-  # A local IFS restores normal "space separated" message building.
   local IFS=' '
   local msg="$*"
 
-  local want="${_LOG_LEVELS[$level]:-20}"
+  local want="${_LOG_LEVELS[${level}]:-20}"
   local threshold="${_LOG_LEVELS[${LOG_LEVEL^^}]:-20}"
   ((want < threshold)) && return 0
 
@@ -138,17 +132,18 @@ log() {
   printf -v ts '%(%Y-%m-%dT%H:%M:%S%z)T' -1
 
   local colour=""
-  case $level in
-    DEBUG) colour=$C_GREY ;;
-    INFO) colour=$C_BLUE ;;
-    WARN) colour=$C_YELLOW ;;
-    ERROR | FATAL) colour=$C_RED ;;
+  case ${level} in
+    DEBUG) colour=${C_GREY} ;;
+    INFO) colour=${C_BLUE} ;;
+    WARN) colour=${C_YELLOW} ;;
+    ERROR | FATAL) colour=${C_RED} ;;
+    *) colour='' ;;
   esac
 
-  printf '%s %s%-5s%s %s\n' "$ts" "$colour" "$level" "$C_RESET" "$msg" >&2
+  printf '%s %s%-5s%s %s\n' "${ts}" "${colour}" "${level}" "${C_RESET}" "${msg}" >&2
 
-  if [[ -n $LOG_FILE ]]; then
-    printf '%s %-5s [%s] %s\n' "$ts" "$level" "$SCRIPT_NAME" "$msg" >>"$LOG_FILE"
+  if [[ -n ${LOG_FILE} ]]; then
+    printf '%s %-5s [%s] %s\n' "${ts}" "${level}" "${SCRIPT_NAME}" "${msg}" >>"${LOG_FILE}"
   fi
 }
 
@@ -156,7 +151,7 @@ log_debug() { log DEBUG "$@"; }
 log_info() { log INFO "$@"; }
 log_warn() { log WARN "$@"; }
 log_error() { log ERROR "$@"; }
-log_ok() { printf '%s  %s[ ok ]%s %s\n' "$(printf '%(%H:%M:%S)T' -1)" "$C_GREEN" "$C_RESET" "$*" >&2; }
+log_ok() { printf '%s  %s[ ok ]%s %s\n' "$(printf '%(%H:%M:%S)T' -1)" "${C_GREEN}" "${C_RESET}" "$*" >&2; }
 
 # ---------------------------------------------------------------------------
 # FUNCTION 3: die - log a fatal message and exit
@@ -166,8 +161,8 @@ log_ok() { printf '%s  %s[ ok ]%s %s\n' "$(printf '%(%H:%M:%S)T' -1)" "$C_GREEN"
 die() {
   local msg="${1:-unspecified fatal error}"
   local code="${2:-1}"
-  log FATAL "$msg"
-  exit "$code"
+  log FATAL "${msg}"
+  exit "${code}"
 }
 
 # ---------------------------------------------------------------------------
@@ -208,7 +203,7 @@ ${C_BOLD}EXIT CODES${C_RESET}
 EOF
 }
 
-version() { printf '%s %s\n' "$SCRIPT_NAME" "$SCRIPT_VERSION"; }
+version() { printf '%s %s\n' "${SCRIPT_NAME}" "${SCRIPT_VERSION}"; }
 
 # ---------------------------------------------------------------------------
 # FUNCTION 5: parse_args - hand written option parser
@@ -238,19 +233,19 @@ parse_args() {
         setup_colors
         ;;
       -c | --config)
-        [[ ${2:-} ]] || die "--config requires a file path" 2
+        [[ -n ${2:-} ]] || die "--config requires a file path" 2
         load_config "$2"
         shift
         ;;
       --config=*) load_config "${1#*=}" ;;
       --log-level)
-        [[ ${2:-} ]] || die "--log-level requires a value" 2
+        [[ -n ${2:-} ]] || die "--log-level requires a value" 2
         LOG_LEVEL="$2"
         shift
         ;;
       --log-level=*) LOG_LEVEL="${1#*=}" ;;
       --log-file)
-        [[ ${2:-} ]] || die "--log-file requires a path" 2
+        [[ -n ${2:-} ]] || die "--log-file requires a path" 2
         LOG_FILE="$2"
         shift
         ;;
@@ -266,32 +261,28 @@ parse_args() {
     shift
   done
 
-  [[ -n ${_LOG_LEVELS[${LOG_LEVEL^^}]:-} ]] || die "invalid log level: $LOG_LEVEL" 2
+  [[ -n ${_LOG_LEVELS[${LOG_LEVEL^^}]:-} ]] || die "invalid log level: ${LOG_LEVEL}" 2
 }
 
 # ---------------------------------------------------------------------------
-# FUNCTION 6: register_cleanup - LIFO cleanup stack
+# FUNCTION 6: cleanup helpers
 # ---------------------------------------------------------------------------
-# Register work to undo as soon as you create it, not at the end of the
-# script. Commands run in reverse order, like an unwinding stack.
-#
-#   mkdir /srv/staging
-#   register_cleanup "rmdir /srv/staging"
-#
-# Note: the argument is evaluated later, so quote carefully. Prefer
-# registering a function name over a long inline command.
-register_cleanup() {
-  local IFS=' '
-  _CLEANUP_STACK+=("$*")
-}
-
 _run_cleanup() {
-  local i
-  for ((i = ${#_CLEANUP_STACK[@]} - 1; i >= 0; i--)); do
-    log_debug "cleanup: ${_CLEANUP_STACK[i]}"
-    eval "${_CLEANUP_STACK[i]}" || log_warn "cleanup step failed: ${_CLEANUP_STACK[i]}"
+  _release_lock
+
+  local index temporary_path
+  for ((index = ${#_TEMP_PATHS[@]} - 1; index >= 0; index--)); do
+    temporary_path="${_TEMP_PATHS[index]}"
+    log_debug "cleanup: ${temporary_path}"
+    if [[ -d "${temporary_path}" ]]; then
+      rm -rf -- "${temporary_path:?temporary path is unset}" \
+        || log_warn "cleanup failed: ${temporary_path}"
+    else
+      rm -f -- "${temporary_path:?temporary path is unset}" \
+        || log_warn "cleanup failed: ${temporary_path}"
+    fi
   done
-  _CLEANUP_STACK=()
+  _TEMP_PATHS=()
 }
 
 # ---------------------------------------------------------------------------
@@ -299,17 +290,17 @@ _run_cleanup() {
 # ---------------------------------------------------------------------------
 on_exit() {
   local rc=$?
-  trap - EXIT INT TERM ERR   # avoid recursion if cleanup itself fails
+  trap - EXIT INT TERM ERR # avoid recursion if cleanup itself fails
   _run_cleanup
   log_debug "exiting with code ${rc}"
-  exit "$rc"
+  exit "${rc}"
 }
 
 on_signal() {
   local sig="$1"
   log_warn "received SIG${sig}, cleaning up"
   # Convention: 128 + signal number, so callers can tell how you died.
-  case $sig in
+  case ${sig} in
     INT) exit 130 ;;
     TERM) exit 143 ;;
     *) exit 1 ;;
@@ -319,12 +310,12 @@ on_signal() {
 on_error() {
   local rc=$?
   local line="${BASH_LINENO[0]}"
-  local cmd="$BASH_COMMAND"
-  local src="${BASH_SOURCE[1]:-$SCRIPT_NAME}"
+  local cmd="${BASH_COMMAND}"
+  local src="${BASH_SOURCE[1]:-${SCRIPT_NAME}}"
   log_error "command failed (exit ${rc}) at ${src}:${line}"
   log_error "  -> ${cmd}"
   print_stack_trace
-  exit "$rc"
+  exit "${rc}"
 }
 
 print_stack_trace() {
@@ -347,22 +338,29 @@ trap on_error ERR
 # Never write to a hard coded /tmp/myfile. That is a symlink attack and a
 # collision waiting to happen. mktemp gives you a private, unpredictable name.
 #
-#   tmpdir=$(make_temp_dir)
-#   tmpfile=$(make_temp_file "download")
+# Both functions set REPLY. Call them directly so cleanup registration remains
+# in the current shell instead of being lost inside command substitution.
+#
+#   make_temp_dir
+#   tmpdir="${REPLY}"
+#   make_temp_file "download"
+#   tmpfile="${REPLY}"
 make_temp_dir() {
-  local prefix="${1:-$SCRIPT_NAME}"
-  local d
-  d=$(mktemp -d -t "${prefix}.XXXXXXXXXX") || die "cannot create temp dir"
-  register_cleanup "rm -rf -- '$d'"
-  printf '%s\n' "$d"
+  local prefix="${1:-${SCRIPT_NAME}}"
+  local temporary_dir
+  temporary_dir=$(mktemp -d -t "${prefix}.XXXXXXXXXX") \
+    || die "cannot create temp dir"
+  _TEMP_PATHS+=("${temporary_dir}")
+  REPLY="${temporary_dir}"
 }
 
 make_temp_file() {
-  local prefix="${1:-$SCRIPT_NAME}"
-  local f
-  f=$(mktemp -t "${prefix}.XXXXXXXXXX") || die "cannot create temp file"
-  register_cleanup "rm -f -- '$f'"
-  printf '%s\n' "$f"
+  local prefix="${1:-${SCRIPT_NAME}}"
+  local temporary_file
+  temporary_file=$(mktemp -t "${prefix}.XXXXXXXXXX") \
+    || die "cannot create temp file"
+  _TEMP_PATHS+=("${temporary_file}")
+  REPLY="${temporary_file}"
 }
 
 # ---------------------------------------------------------------------------
@@ -377,7 +375,7 @@ require_cmds() {
   local -a missing=()
   local cmd
   for cmd in "$@"; do
-    command -v -- "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
+    command -v -- "${cmd}" >/dev/null 2>&1 || missing+=("${cmd}")
   done
   if ((${#missing[@]} > 0)); then
     die "missing required command(s): ${missing[*]}" 3
@@ -389,7 +387,7 @@ require_cmds() {
 # FUNCTION 10: require_root / require_not_root
 # ---------------------------------------------------------------------------
 require_root() {
-  ((EUID == 0)) || die "this script must be run as root (try: sudo $SCRIPT_NAME)" 2
+  ((EUID == 0)) || die "this script must be run as root (try: sudo ${SCRIPT_NAME})" 2
 }
 
 require_not_root() {
@@ -405,35 +403,45 @@ require_not_root() {
 #   acquire_lock                 # fail immediately if already locked
 #   acquire_lock "" 30           # wait up to 30 seconds for the lock
 acquire_lock() {
-  local lockfile="${1:-/var/lock/${SCRIPT_NAME}.lock}"
+  require_cmds flock
+
+  local lockfile="${1:-}"
   local wait_secs="${2:-0}"
 
-  # Fall back to /tmp when /var/lock is not writable (non-root, containers).
-  if ! : >>"$lockfile" 2>/dev/null; then
-    lockfile="${TMPDIR:-/tmp}/${SCRIPT_NAME}.lock"
-    : >>"$lockfile" || die "cannot create lock file: $lockfile"
+  if [[ -z "${lockfile}" ]]; then
+    if [[ -w /var/lock ]]; then
+      lockfile="/var/lock/${SCRIPT_NAME}.lock"
+    else
+      local runtime_dir="${XDG_RUNTIME_DIR:-${TMPDIR:-}}"
+      if [[ -z "${runtime_dir}" || ! -d "${runtime_dir}" ||
+        -L "${runtime_dir}" || ! -O "${runtime_dir}" ]]; then
+        die "no private runtime directory available for the lock"
+      fi
+      lockfile="${runtime_dir%/}/${SCRIPT_NAME}.lock"
+    fi
   fi
 
-  exec {_LOCK_FD}>"$lockfile" || die "cannot open lock file: $lockfile"
-  _LOCK_FILE="$lockfile"
+  [[ ! -L "${lockfile}" ]] || die "refusing symlink lock file: ${lockfile}"
+  exec {_LOCK_FD}>>"${lockfile}" \
+    || die "cannot open lock file: ${lockfile}"
+  _LOCK_FILE="${lockfile}"
 
   if ((wait_secs > 0)); then
-    flock -w "$wait_secs" "$_LOCK_FD" \
-      || die "another instance is running (waited ${wait_secs}s): $lockfile"
+    flock -w "${wait_secs}" "${_LOCK_FD}" \
+      || die "another instance is running (waited ${wait_secs}s): ${lockfile}"
   else
-    flock -n "$_LOCK_FD" || die "another instance is running: $lockfile"
+    flock -n "${_LOCK_FD}" \
+      || die "another instance is running: ${lockfile}"
   fi
 
-  printf '%s\n' "$$" >&"$_LOCK_FD"
-  register_cleanup "_release_lock"
-  log_debug "lock acquired: $lockfile (pid $$)"
+  log_debug "lock acquired: ${lockfile} (pid $$)"
 }
 
 _release_lock() {
-  [[ -n $_LOCK_FD ]] || return 0
-  flock -u "$_LOCK_FD" 2>/dev/null || true
-  eval "exec ${_LOCK_FD}>&-" 2>/dev/null || true
-  _LOCK_FD=""
+  [[ -n ${_LOCK_FD} ]] || return 0
+  flock -u "${_LOCK_FD}" 2>/dev/null || true
+  exec {_LOCK_FD}>&-
+  _LOCK_FD=''
 }
 
 # ---------------------------------------------------------------------------
@@ -445,11 +453,15 @@ _release_lock() {
 #   run_cmd systemctl restart nginx
 #   run_cmd rsync -a "$src/" "$dst/"
 run_cmd() {
+  local rendered_args
+  rendered_args="$(quote_args "$@")"
+
   if ((DRY_RUN)); then
-    printf '%s[dry-run]%s %s\n' "$C_MAGENTA" "$C_RESET" "$(quote_args "$@")" >&2
+    printf '%s[dry-run]%s %s\n' \
+      "${C_MAGENTA}" "${C_RESET}" "${rendered_args}" >&2
     return 0
   fi
-  log_debug "exec: $(quote_args "$@")"
+  log_debug "exec: ${rendered_args}"
   "$@"
 }
 
@@ -457,8 +469,8 @@ run_cmd() {
 quote_args() {
   local out="" arg
   for arg in "$@"; do
-    if [[ $arg =~ ^[A-Za-z0-9_./:=-]+$ ]]; then
-      out+="$arg "
+    if [[ ${arg} =~ ^[A-Za-z0-9_./:=-]+$ ]]; then
+      out+="${arg} "
     else
       out+="'${arg//\'/\'\\\'\'}' "
     fi
@@ -490,14 +502,16 @@ retry() {
     ((attempt >= max_attempts)) && break
 
     delay=$((base_delay * 2 ** (attempt - 1)))
-    delay=$((delay + RANDOM % (delay > 1 ? delay : 1)))   # jitter
+    delay=$((delay + RANDOM % (delay > 1 ? delay : 1))) # jitter
     log_warn "attempt ${attempt}/${max_attempts} failed (rc=${rc}), retrying in ${delay}s"
-    sleep "$delay"
+    sleep "${delay}"
     ((attempt += 1))
   done
 
-  log_error "all ${max_attempts} attempts failed: $(quote_args "$@")"
-  return "$rc"
+  local rendered_args
+  rendered_args="$(quote_args "$@")"
+  log_error "all ${max_attempts} attempts failed: ${rendered_args}"
+  return "${rc}"
 }
 
 # ---------------------------------------------------------------------------
@@ -518,7 +532,7 @@ wait_for() {
       log_ok "${description} ready after ${elapsed}s"
       return 0
     fi
-    sleep "$interval"
+    sleep "${interval}"
     elapsed=$((elapsed + interval))
   done
 
@@ -529,13 +543,13 @@ wait_for() {
 # ---------------------------------------------------------------------------
 # FUNCTION 15: confirm - yes/no prompt that is automation friendly
 # ---------------------------------------------------------------------------
-# Returns 0 for yes, 1 for no. Auto-answers yes when --yes is set or when
-# stdin is not a terminal, so the script never hangs in cron.
+# Returns 0 for yes and 1 for no. Uses the configured default when stdin is
+# not a terminal, so the script never hangs in cron.
 #
 #   confirm "Delete ${count} snapshots?" || die "aborted by user"
 confirm() {
   local prompt="${1:-Continue?}"
-  local default="${2:-n}"   # "y" or "n"
+  local default="${2:-n}" # "y" or "n"
 
   if ((ASSUME_YES)); then
     log_debug "auto-confirmed: ${prompt}"
@@ -551,8 +565,8 @@ confirm() {
 
   local answer
   while :; do
-    read -r -p "$(printf '%s%s%s %s ' "$C_YELLOW" "$prompt" "$C_RESET" "$hint")" answer </dev/tty
-    answer="${answer:-$default}"
+    read -r -p "$(printf '%s%s%s %s ' "${C_YELLOW}" "${prompt}" "${C_RESET}" "${hint}")" answer </dev/tty
+    answer="${answer:-${default}}"
     case "${answer,,}" in
       y | yes) return 0 ;;
       n | no) return 1 ;;
@@ -569,46 +583,47 @@ confirm() {
 prompt() {
   local question="$1" default="${2:-}" answer
   local suffix=""
-  [[ -n $default ]] && suffix=" [${default}]"
+  [[ -n ${default} ]] && suffix=" [${default}]"
 
   if [[ ! -t 0 ]]; then
-    [[ -n $default ]] || die "no default for '${question}' and no terminal to ask on"
-    printf '%s\n' "$default"
+    [[ -n ${default} ]] || die "no default for '${question}' and no terminal to ask on"
+    printf '%s\n' "${default}"
     return 0
   fi
 
-  read -r -p "$(printf '%s%s:%s ' "$C_CYAN" "${question}${suffix}" "$C_RESET")" answer </dev/tty
-  printf '%s\n' "${answer:-$default}"
+  read -r -p "$(printf '%s%s:%s ' "${C_CYAN}" "${question}${suffix}" "${C_RESET}")" answer </dev/tty
+  printf '%s\n' "${answer:-${default}}"
 }
 
 prompt_secret() {
   local question="$1" answer
-  read -r -s -p "$(printf '%s%s:%s ' "$C_CYAN" "$question" "$C_RESET")" answer </dev/tty
+  [[ -t 0 ]] || die "no terminal available for secret prompt"
+  read -r -s -p "$(printf '%s%s:%s ' "${C_CYAN}" "${question}" "${C_RESET}")" answer </dev/tty
   printf '\n' >&2
-  printf '%s\n' "$answer"
+  printf '%s\n' "${answer}"
 }
 
 # ---------------------------------------------------------------------------
 # FUNCTION 17: load_config - read KEY=VALUE files without sourcing them
 # ---------------------------------------------------------------------------
 # `source config.env` executes the file. A config file should be data, not
-# code. This parser reads plain KEY=VALUE lines and ignores everything else,
-# so a compromised config cannot run arbitrary commands as root.
+# code. This parser accepts only the explicitly supported keys below, so a
+# compromised config cannot replace PATH or inject loader settings.
 load_config() {
   local file="$1"
-  [[ -r $file ]] || die "config file not readable: ${file}"
+  [[ -r ${file} ]] || die "config file not readable: ${file}"
 
   local perms
-  perms=$(stat -c '%a' "$file" 2>/dev/null || stat -f '%Lp' "$file" 2>/dev/null || echo "")
-  [[ $perms =~ [2367]$ ]] && log_warn "config file is world writable: ${file} (${perms})"
+  perms=$(stat -c '%a' "${file}" 2>/dev/null || stat -f '%Lp' "${file}" 2>/dev/null || echo "")
+  [[ ${perms} =~ [2367]$ ]] && log_warn "config file is world writable: ${file} (${perms})"
 
   local line key value lineno=0
-  while IFS= read -r line || [[ -n $line ]]; do
+  while IFS= read -r line || [[ -n ${line} ]]; do
     ((lineno += 1))
-    line="${line%%#*}"                    # strip comments
-    line="$(trim "$line")"
-    [[ -z $line ]] && continue
-    [[ $line != *=* ]] && {
+    line="${line%%#*}" # strip comments
+    line="$(trim "${line}")"
+    [[ -z ${line} ]] && continue
+    [[ ${line} != *=* ]] && {
       log_warn "${file}:${lineno}: ignoring malformed line"
       continue
     }
@@ -617,18 +632,39 @@ load_config() {
     value="$(trim "${line#*=}")"
     key="${key#export }"
 
-    if [[ ! $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    if [[ ! ${key} =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
       log_warn "${file}:${lineno}: ignoring invalid key '${key}'"
       continue
     fi
 
-    # Strip one layer of matching quotes.
-    [[ $value == \"*\" || $value == \'*\' ]] && value="${value:1:${#value}-2}"
+    case "${key}" in
+      LOG_LEVEL | LOG_FILE | DRY_RUN | ASSUME_YES | NO_COLOR) ;;
+      *)
+        log_warn "${file}:${lineno}: ignoring unsupported key '${key}'"
+        continue
+        ;;
+    esac
 
-    printf -v "$key" '%s' "$value"
-    export "${key?}"
-    log_debug "config: ${key}=$(mask_secret "$key" "$value")"
-  done <"$file"
+    # Strip one layer of matching quotes.
+    [[ ${value} == \"*\" || ${value} == \'*\' ]] && value="${value:1:${#value}-2}"
+
+    case "${key}" in
+      LOG_LEVEL)
+        [[ -n ${_LOG_LEVELS[${value^^}]:-} ]] \
+          || die "invalid LOG_LEVEL in ${file}:${lineno}" 2
+        ;;
+      DRY_RUN | ASSUME_YES)
+        [[ "${value}" =~ ^[01]$ ]] \
+          || die "${key} must be 0 or 1 in ${file}:${lineno}" 2
+        ;;
+      *) ;;
+    esac
+
+    printf -v "${key}" '%s' "${value}"
+    local masked_value
+    masked_value="$(mask_secret "${key}" "${value}")"
+    log_debug "config: ${key}=${masked_value}"
+  done <"${file}"
 
   log_info "loaded config: ${file}"
 }
@@ -653,14 +689,15 @@ detect_os() {
     while IFS='=' read -r k v; do
       v="${v%\"}"
       v="${v#\"}"
-      case "$k" in
-        ID) OS_ID="$v" ;;
-        VERSION_ID) OS_VERSION="$v" ;;
-        ID_LIKE) OS_FAMILY="$v" ;;
+      case "${k}" in
+        ID) OS_ID="${v}" ;;
+        VERSION_ID) OS_VERSION="${v}" ;;
+        ID_LIKE) OS_FAMILY="${v}" ;;
+        *) ;;
       esac
     done </etc/os-release
-    [[ $OS_FAMILY == "unknown" ]] && OS_FAMILY="$OS_ID"
-  elif [[ $OS_KERNEL == "Darwin" ]]; then
+    [[ ${OS_FAMILY} == "unknown" ]] && OS_FAMILY="${OS_ID}"
+  elif [[ ${OS_KERNEL} == "Darwin" ]]; then
     OS_ID="macos"
     OS_FAMILY="darwin"
     OS_VERSION="$(sw_vers -productVersion 2>/dev/null || echo unknown)"
@@ -668,8 +705,8 @@ detect_os() {
 
   local pm
   for pm in dnf microdnf yum apt-get zypper apk pacman brew; do
-    if command -v -- "$pm" >/dev/null 2>&1; then
-      PKG_MANAGER="$pm"
+    if command -v -- "${pm}" >/dev/null 2>&1; then
+      PKG_MANAGER="${pm}"
       break
     fi
   done
@@ -688,7 +725,7 @@ detect_os() {
 #     || die "docker 24+ required"
 version_ge() {
   local a="$1" b="$2"
-  [[ $a == "$b" ]] && return 0
+  [[ ${a} == "${b}" ]] && return 0
 
   local -a va vb
   local IFS='.'
@@ -701,8 +738,8 @@ version_ge() {
     local x="${va[i]:-0}" y="${vb[i]:-0}"
     x="${x//[^0-9]/}" && x="${x:-0}"
     y="${y//[^0-9]/}" && y="${y:-0}"
-    ((10#$x > 10#$y)) && return 0
-    ((10#$x < 10#$y)) && return 1
+    ((10#${x} > 10#${y})) && return 0
+    ((10#${x} < 10#${y})) && return 1
   done
   return 0
 }
@@ -717,7 +754,7 @@ trim() {
   local s="${1-}"
   s="${s#"${s%%[![:space:]]*}"}"
   s="${s%"${s##*[![:space:]]}"}"
-  printf '%s' "$s"
+  printf '%s' "${s}"
 }
 
 # in_array "prod" "${environments[@]}"  ->  exit 0 if found
@@ -726,7 +763,7 @@ in_array() {
   shift
   local item
   for item in "$@"; do
-    [[ $item == "$needle" ]] && return 0
+    [[ ${item} == "${needle}" ]] && return 0
   done
   return 1
 }
@@ -738,7 +775,7 @@ join_by() {
   (($# == 0)) && return 0
   printf '%s' "$1"
   shift
-  printf '%s' "${@/#/$sep}"
+  printf '%s' "${@/#/${sep}}"
 }
 
 # is_int 42 -> 0 ; is_int 4.2 -> 1
@@ -748,7 +785,7 @@ is_positive_int() { [[ ${1:-} =~ ^[1-9][0-9]*$ ]]; }
 # Hide secrets in log output based on the variable name.
 mask_secret() {
   local name="${1^^}" value="$2"
-  case "$name" in
+  case "${name}" in
     *PASS* | *SECRET* | *TOKEN* | *KEY* | *CREDENTIAL*)
       if ((${#value} > 4)); then
         printf '%s' "${value:0:2}****${value: -2}"
@@ -756,7 +793,7 @@ mask_secret() {
         printf '****'
       fi
       ;;
-    *) printf '%s' "$value" ;;
+    *) printf '%s' "${value}" ;;
   esac
 }
 
@@ -770,34 +807,41 @@ mask_secret() {
 atomic_write() {
   local target="$1" mode="${2:-0644}"
   local dir tmp
-  dir="$(dirname -- "$target")"
-  [[ -d $dir ]] || die "target directory does not exist: ${dir}"
 
-  tmp="$(mktemp -- "${dir}/.$(basename -- "$target").XXXXXX")" || die "mktemp failed in ${dir}"
-  register_cleanup "rm -f -- '$tmp'"
+  if ((DRY_RUN)); then
+    cat >/dev/null
+    log_info "dry-run: would atomically write ${target} (mode ${mode})"
+    return 0
+  fi
 
-  cat >"$tmp"
-  chmod "$mode" "$tmp"
-  mv -f -- "$tmp" "$target"
+  dir="$(dirname -- "${target}")"
+  [[ -d ${dir} ]] || die "target directory does not exist: ${dir}"
+
+  tmp="$(mktemp -- "${dir}/.$(basename -- "${target}").XXXXXX")" || die "mktemp failed in ${dir}"
+  _TEMP_PATHS+=("${tmp}")
+
+  cat >"${tmp}"
+  chmod "${mode}" "${tmp}"
+  mv -f -- "${tmp}" "${target}"
   log_debug "atomically wrote ${target} (mode ${mode})"
 }
 
 # Keep a timestamped copy before you edit something in place.
 backup_file() {
   local file="$1"
-  [[ -f $file ]] || return 0
+  [[ -f ${file} ]] || return 0
   local stamp
   printf -v stamp '%(%Y%m%d-%H%M%S)T' -1
   local backup="${file}.${stamp}.bak"
-  run_cmd cp -a -- "$file" "$backup"
+  run_cmd cp -a -- "${file}" "${backup}"
   log_info "backup created: ${backup}"
-  printf '%s\n' "$backup"
+  printf '%s\n' "${backup}"
 }
 
 # Refuse to start if the disk is too full to finish.
 require_disk_space() {
   local path="$1" needed_mb="$2" available_mb
-  available_mb=$(df -Pm -- "$path" | awk 'NR==2 {print $4}')
+  available_mb=$(df -Pm -- "${path}" | awk 'NR==2 {print $4}')
   ((available_mb >= needed_mb)) \
     || die "need ${needed_mb}MB on ${path}, only ${available_mb}MB free"
   log_debug "disk check ok: ${available_mb}MB free on ${path}"
@@ -813,7 +857,7 @@ main() {
 
   log_debug "${SCRIPT_NAME} v${SCRIPT_VERSION} starting (pid $$, dry-run=${DRY_RUN})"
 
-  require_cmds awk sed grep df
+  require_cmds mktemp rm uname
   detect_os
 
   # Uncomment the guards your script actually needs.
@@ -828,7 +872,8 @@ main() {
   fi
 
   local workdir
-  workdir="$(make_temp_dir)"
+  make_temp_dir
+  workdir="${REPLY}"
   log_info "working directory: ${workdir}"
 
   local target

@@ -1,4 +1,4 @@
-# Review checklist
+# Shell Script Review checklist
 
 Work down this list in order and report findings in the same order. Data loss
 first, cosmetics last. Run `scripts/check.sh` before starting: shellcheck and

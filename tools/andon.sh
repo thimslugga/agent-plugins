@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# andon.sh — stop the line on the first defect, no exceptions.
+# andon.sh - stop the line on the first defect, no exceptions.
 
-ok() { printf 'ANDON::PASS: %s\n' "$1"; }
+pass() { printf 'ANDON::PASS: %s\n' "$1"; }
 fail() { printf 'ANDON::FAIL: %s\n' "$1" >&2; exit 1; }
 
 # Batch-size limit: reject diffs too large for meaningful human review.
@@ -24,4 +24,4 @@ pytest -q --cov=src --cov-fail-under=80 || fail "tests/coverage"
 # pip-audit
 #pip-audit -r requirements.txt || fail "known CVEs in dependencies"
 
-ok "line clear"
+pass "line clear"

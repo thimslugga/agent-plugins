@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# pi shim: run venv's pi with env setup-venv.sh expects.
+#
+# Ensures `pi install npm:...` lands in venv, not ~/.local/npm-global.
+#
+# Usage: ./pi <args>  OR  symlink ~/bin/pi -> ~/.venvs/pi
+
+#PWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+export VIRTUAL_ENV="$HOME/.venvs/agents"
+export NPM_CONFIG_PREFIX="$VIRTUAL_ENV"
+export PATH="$VIRTUAL_ENV/bin:$PATH"
+
+exec "$VIRTUAL_ENV/bin/pi" "$@"

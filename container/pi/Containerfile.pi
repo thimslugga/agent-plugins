@@ -1,0 +1,29 @@
+FROM node:24-bookworm-slim
+
+ARG PI_AGENT_VERSION=0.82.1
+
+RUN \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    curl \
+    git \
+    jq \
+    socat \
+    ripgrep \
+  && rm -rf /var/lib/apt/lists/*; \
+  useradd -m -s /bin/bash -d /home/agent --uid 1000 agent \
+  && chown -R agent:agent /home/agent; \
+  npm install --global --ignore-scripts --no-audit --no-fund "@earendil-works/pi-coding-agent@${PI_AGENT_VERSION}" \
+  && npm cache clean --force
+
+USER agent
+
+WORKDIR /home/agent
+
+ENV HOME=/home/agent
+
+COPY config/ /home/agent/.pi/agent/
+
+ENTRYPOINT ["pi"]

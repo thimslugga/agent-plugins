@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# npm shim: run venv's npm with NPM_CONFIG_PREFIX set.
+#
+# Ensures `npm install -g` lands in venv, not ~/.local/npm-global.
+#
+# Usage: ./npm <args>  OR  symlink ~/bin/npm -> ~/.venvs/npm
+
+export VIRTUAL_ENV="$HOME/.venvs/agents"
+export NPM_CONFIG_PREFIX="$VIRTUAL_ENV"
+export PATH="$VIRTUAL_ENV/bin:$PATH"
+
+exec "$VIRTUAL_ENV/bin/npm" "$@"

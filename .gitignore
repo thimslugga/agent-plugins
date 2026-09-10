@@ -122,16 +122,17 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
 # Sphinx documentation
 docs/_build/
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# mkdocs documentation
+/site
+
+# Ruff stuff
+.ruff_cache/
+
+# Pyright
+.pyright/
 
 # Pyre type checker
 .pyre/
@@ -139,11 +140,10 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# Ruff stuff:
-.ruff_cache/
-
-# rumdl stuff
-.rumdl_cache/
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # Redis
 *.rdb
@@ -163,18 +163,26 @@ db.sqlite3-journal
 .beads/proxieddb/
 
 # Archives
-*.tar.gz
-*.tgz
 *.zip
 *.skill
+*.p7z
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+
+# Packages
+*.rpm
+*.deb
+*.AppImage
+*.exe
+*.msi
+
+# rumdl for markdown
+.rumdl_cache/
 
 # macOS
 .DS_Store
-
-# Git Worktrees
-worktrees/
-.worktrees/
-.claude/worktrees/
 
 # Vim
 *.swp
@@ -210,9 +218,15 @@ CLAUDE.local.md
 .claude/*
 !.claude/settings.json
 .claude/settings.local.json
+.claude/worktrees/
+.remember/
 
 # Codex
-.codex/
+.codex/*
 
 # agents
-.agents/
+.agents/*
+
+# Git Worktrees
+worktrees/
+.worktrees/

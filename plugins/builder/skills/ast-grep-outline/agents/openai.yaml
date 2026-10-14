@@ -1,0 +1,3 @@
+interface:
+  display_name: "ast-grep outline"
+  short_description: "Cheap structural map of code before reading source"

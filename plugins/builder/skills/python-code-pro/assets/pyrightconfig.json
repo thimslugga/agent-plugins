@@ -1,0 +1,18 @@
+// pyrightconfig.json — editor integration only, NOT a CI gate.
+//
+// The enforced typecheck standard is mypy --strict (see [tool.mypy] in
+// pyproject.toml); scripts/check runs mypy, never pyright. This file exists
+// so editors running Pylance/pyright agree with mypy as closely as possible.
+// If pyright and mypy disagree, mypy wins.
+//
+// Placeholder substituted by scripts/init-config: __SOURCE_DIR__.
+{
+  "include": ["__SOURCE_DIR__"],
+  "extraPaths": ["__SOURCE_DIR__"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "strict",
+  // Mirrors of the mypy strict options in pyproject.toml:
+  "reportUnnecessaryTypeIgnoreComment": "error",
+  "reportMissingTypeStubs": "error",
+  "reportImplicitOverride": "error"
+}

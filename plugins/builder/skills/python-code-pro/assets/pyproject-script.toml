@@ -1,0 +1,80 @@
+# python-code-pro one-off script profile.
+#
+# Written next to single-file scripts by scripts/new-script (skipped when a
+# ruff config is already discoverable in the directory or its parents, or
+# with --no-config). Lets plain `scripts/check` enforce the shared standard
+# with no flags: ruff/mypy/ty pick this file up automatically.
+#
+# Same curated ruff rule set as the project template — keep the `select`
+# list in sync with assets/pyproject.toml. Script-appropriate relaxations:
+#   D    docstrings not required on every function
+#   ANN  annotations not forced (mypy still strictly checks what IS annotated)
+#   T201 print() allowed (a script's stdout is its real output)
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Keep in sync with assets/pyproject.toml [tool.ruff.lint] select.
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "N",        # pep8-naming
+    "I",        # isort
+    "B",        # bugbear
+    "Q",        # flake8-quotes (formatter-conflicting codes ignored below)
+    "C4",       # comprehensions
+    "FA",       # future annotations
+    "DTZ",      # naive datetimes
+    "LOG",      # flake8-logging
+    "G",        # logging format (G004: no f-strings in logs)
+    "EM",       # exception messages
+    "S",        # bandit
+    "UP",       # pyupgrade
+    "SIM",      # simplify
+    "PTH",      # pathlib
+    "RET",      # returns
+    "ARG",      # unused arguments
+    "D",        # pydocstyle
+    "ANN",      # annotations
+    "TID",      # tidy imports / banned-api
+    "PGH",      # pygrep hooks (blanket noqa / type: ignore)
+    "RUF",      # ruff-specific
+    "C90",      # mccabe
+    "PL",       # pylint (includes PLE1205/PLE1206)
+    "EXE",      # executable/shebang
+    "PYI",      # stub files
+    "T20",      # print / breakpoint
+    "BLE",      # blind except
+    "TRY",      # exception anti-patterns
+    "ASYNC",    # blocking calls in async
+    "PT",       # pytest style
+    "ERA",      # commented-out code
+    "PERF",     # performance anti-patterns
+]
+ignore = [
+    # Conflict with / redundant under `ruff format`
+    "W191", "E111", "E114", "E117", "D206", "D300",
+    "Q000", "Q001", "Q002", "Q003",
+    # One-off script relaxations (mirrors `scripts/check --script`)
+    "D", "ANN", "T201",
+]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# forces leaner functions, same as the project template
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+# mypy is strict except the annotation *requirements* are off, mirroring the
+# ANN relaxation above: annotated code is checked hard, untyped helpers are
+# not forced to annotate. scripts/check runs mypy config-driven (no --strict
+# override) so these settings are honored.
+[tool.mypy]
+strict = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+warn_unused_configs = true

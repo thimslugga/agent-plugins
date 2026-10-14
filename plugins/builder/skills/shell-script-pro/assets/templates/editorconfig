@@ -1,0 +1,51 @@
+# .editorconfig — https://editorconfig.org/
+#
+# Install with: <skill>/scripts/init-configs.sh   (copies this file to ./.editorconfig)
+#
+# shfmt reads these keys for shell files. Key spellings follow the shfmt man
+# page (https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd):
+# the current spellings are language_dialect and case_indent (the older
+# shell_variant and switch_case_indent still work but lose on conflict).
+#
+# NOTE: CLI flags always win over EditorConfig values. scripts/lint.sh and
+# scripts/format.sh pass -i 2 -ci -bn -s explicitly, so these settings only
+# take effect for editors invoking shfmt without flags.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.sh]
+# like -i=2
+indent_size = 2
+# --language-dialect
+language_dialect = bash
+# --simplify
+simplify = true
+# --binary-next-line
+binary_next_line = true
+# --case-indent
+case_indent = true
+
+# Extensionless scripts (no .sh): shfmt matches these by shebang instead
+# of extension. [[bash]] / [[shell]] / [[zsh]] sections are shfmt-specific
+# and outside the EditorConfig spec.
+[[bash]]
+language_dialect = bash
+simplify = true
+binary_next_line = true
+case_indent = true
+
+# Never format third-party code you do not own (see the vendored-code rule
+# in references/tools.md).
+[third_party/**]
+ignore = true
+
+[vendor/**]
+ignore = true

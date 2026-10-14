@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# new-script: scaffold a stdlib-only Python one-off script to the
+# python-code-pro standard (argparse, logging, main() -> int), plus a
+# script-profile pyproject.toml so plain `scripts/check` enforces the
+# standard with no flags.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ASSETS_DIR="$(cd -- "$SCRIPT_DIR/../assets" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: new-script [--stdout] [--no-config] <name>
+
+Scaffold a stdlib-only Python script. <name> may be given with or without
+the .py suffix. Refuses to overwrite an existing file.
+
+Also writes a script-profile pyproject.toml (from assets/pyproject-script.toml)
+next to the script, so ruff/mypy/ty pick up the shared standard automatically.
+Skipped when a ruff config is already discoverable in the target directory
+or its parents.
+
+  --stdout     print to stdout instead of writing a file
+  --no-config  do not write the script-profile pyproject.toml
+EOF
+}
+
+to_stdout=0
+write_config=1
+name=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --stdout)
+      to_stdout=1
+      shift
+      ;;
+    --no-config)
+      write_config=0
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      [[ -z $name ]] || {
+        echo "error: only one name" >&2
+        exit 2
+      }
+      name="$1"
+      shift
+      ;;
+  esac
+done
+[[ -n $name ]] || {
+  usage >&2
+  exit 2
+}
+
+file="${name%.py}.py"
+if [[ $to_stdout -eq 0 && -e $file ]]; then
+  echo "error: $file already exists, refusing to overwrite" >&2
+  exit 1
+fi
+
+template() {
+  cat <<'EOF'
+#!/usr/bin/env python3
+"""One-line description of what this script does."""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import sys
+
+log = logging.getLogger(__name__)
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--verbose", action="store_true", help="enable debug logging")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the script."""
+    args = parse_args(argv)
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+    # TODO: implement
+    log.info("done")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+EOF
+}
+
+# Walk up from $1 looking for an existing ruff config; print the first hit.
+find_config_upwards() {
+  local dir="$1"
+  local cfg
+  while true; do
+    for cfg in pyproject.toml ruff.toml .ruff.toml; do
+      if [[ -e "$dir/$cfg" ]]; then
+        printf '%s\n' "$dir/$cfg"
+        return 0
+      fi
+    done
+    [[ $dir == "/" ]] && return 1
+    dir="$(dirname -- "$dir")"
+  done
+}
+
+if [[ $to_stdout -eq 1 ]]; then
+  template
+else
+  template >"$file"
+  chmod +x "$file"
+  echo "wrote $file"
+  if [[ $write_config -eq 1 ]]; then
+    script_dir="$(cd -- "$(dirname -- "$file")" && pwd)"
+    if existing_config="$(find_config_upwards "$script_dir")"; then
+      echo "note: existing config at $existing_config, not writing pyproject.toml"
+    else
+      cp -- "$ASSETS_DIR/pyproject-script.toml" "$script_dir/pyproject.toml"
+      echo "wrote $script_dir/pyproject.toml (script profile)"
+    fi
+  fi
+fi

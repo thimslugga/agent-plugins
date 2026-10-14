@@ -1,0 +1,3 @@
+interface:
+  display_name: "Poka-Yoke"
+  short_description: "Mistake-proof interfaces so misuse cannot be expressed"

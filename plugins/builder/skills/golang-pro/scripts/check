@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# check: format gate + vet + full lint for Go code to the golang-pro
+# standard. Exit 0 clean, 1 findings, 2 tooling/usage error.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: check [--script] [path ...]
+
+  --script    quick profile: gofumpt format gate + go vet only, skips
+              golangci-lint. (With the script-profile .golangci.yml from
+              new-script present, plain check runs the full lint with
+              script-appropriate settings.)
+  path ...    files/dirs/package patterns to check (default: ./... in a
+              module, otherwise all *.go files under .)
+
+Requires gofumpt on PATH. The full profile also requires golangci-lint.
+EOF
+}
+
+profile="full"
+paths=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --script)
+      profile="script"
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if ! command -v gofumpt >/dev/null 2>&1; then
+  echo "error: gofumpt not found on PATH (go install mvdan.cc/gofumpt@latest)" >&2
+  exit 2
+fi
+
+# Collect .go files for gofumpt (it takes files/dirs, not ./... patterns).
+gofiles=()
+if [[ ${#paths[@]} -gt 0 ]]; then
+  for p in "${paths[@]}"; do
+    if [[ -d $p ]]; then
+      while IFS= read -r f; do gofiles+=("$f"); done \
+        < <(find "$p" -name '*.go' -not -path '*/vendor/*' -not -path '*/.git/*')
+    elif [[ -f $p ]]; then
+      gofiles+=("$p")
+    else
+      # package pattern: expand via go list
+      while IFS= read -r f; do gofiles+=("$f"); done \
+        < <(go list -f '{{range .GoFiles}}{{$.Dir}}/{{.}} {{end}}' "$p" 2>/dev/null || true)
+    fi
+  done
+else
+  while IFS= read -r f; do gofiles+=("$f"); done \
+    < <(find . -name '*.go' -not -path './vendor/*' -not -path './.git/*')
+fi
+if [[ ${#gofiles[@]} -eq 0 ]]; then
+  echo "check: no go files found, nothing to do"
+  exit 0
+fi
+
+fail=0
+
+# 1. Format gate (fast, no golangci-lint needed).
+# gofumpt -l exits 0 and lists files needing formatting; non-zero means the
+# tool itself failed (e.g. a file that doesn't parse).
+if ! unformatted="$(gofumpt -l "${gofiles[@]}")"; then
+  echo "error: gofumpt failed to run (syntax error in one of the files?)" >&2
+  exit 2
+fi
+if [[ -n $unformatted ]]; then
+  echo "gofumpt: these files need formatting (run scripts/fmt):"
+  printf '%s\n' "$unformatted"
+  fail=1
+fi
+
+# 2. go vet. Package patterns in module mode, file list otherwise.
+# (go env GOMOD prints /dev/null outside a module; `go list -m` is not a
+# reliable probe on newer toolchains.)
+pkgs=()
+if [[ ${#paths[@]} -gt 0 ]]; then
+  pkgs=("${paths[@]}")
+elif [[ $(go env GOMOD) != "/dev/null" ]]; then
+  pkgs=("./...")
+else
+  pkgs=("${gofiles[@]}")
+fi
+go vet "${pkgs[@]}" || fail=1
+
+# 3. Full lint (skipped in --script mode).
+if [[ $profile == "full" ]]; then
+  if ! command -v golangci-lint >/dev/null 2>&1; then
+    echo "error: golangci-lint not found on PATH" >&2
+    echo "install: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest" >&2
+    exit 2
+  fi
+  golangci-lint run --timeout=5m "${pkgs[@]}" || fail=1
+fi
+
+if [[ $fail -eq 0 ]]; then
+  echo "check: clean"
+fi
+exit "$fail"

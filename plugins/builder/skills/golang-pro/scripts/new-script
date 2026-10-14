@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# new-script: scaffold an idiomatic Go one-shot program (package main,
+# run() error pattern, flag, slog) plus a script-profile .golangci.yml so
+# plain `scripts/check` enforces the standard with no flags.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ASSETS_DIR="$(cd -- "$SCRIPT_DIR/../assets" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: new-script [--stdout] [--no-config] <name>
+
+Scaffold a Go one-shot program. <name> may be given with or without
+the .go suffix. Refuses to overwrite an existing file.
+
+Also writes a script-profile .golangci.yml (from assets/.golangci-script.yml)
+next to the program, so golangci-lint picks up the shared standard
+automatically. Skipped when a golangci-lint config is already discoverable
+in the target directory or its parents.
+
+  --stdout     print to stdout instead of writing a file
+  --no-config  do not write the script-profile .golangci.yml
+EOF
+}
+
+to_stdout=0
+write_config=1
+name=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --stdout)
+      to_stdout=1
+      shift
+      ;;
+    --no-config)
+      write_config=0
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      [[ -z $name ]] || {
+        echo "error: only one name" >&2
+        exit 2
+      }
+      name="$1"
+      shift
+      ;;
+  esac
+done
+[[ -n $name ]] || {
+  usage >&2
+  exit 2
+}
+
+file="${name%.go}.go"
+cmd="$(basename -- "${file%.go}")"
+if [[ $to_stdout -eq 0 && -e $file ]]; then
+  echo "error: $file already exists, refusing to overwrite" >&2
+  exit 1
+fi
+
+template() {
+  cat <<EOF
+// Command $cmd is a one-shot program that <does X>.
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log/slog"
+	"os"
+)
+
+func main() {
+	if err := run(os.Args[1:]); err != nil {
+		slog.Error("fatal", "err", err)
+		os.Exit(1)
+	}
+}
+
+func run(args []string) error {
+	fs := flag.NewFlagSet("$cmd", flag.ContinueOnError)
+	verbose := fs.Bool("verbose", false, "enable debug logging")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	level := slog.LevelInfo
+	if *verbose {
+		level = slog.LevelDebug
+	}
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})))
+
+	// TODO: implement
+	fmt.Println("done")
+	return nil
+}
+EOF
+}
+
+# Walk up from $1 looking for an existing golangci-lint config; print the hit.
+find_config_upwards() {
+  local dir="$1"
+  local cfg
+  while true; do
+    for cfg in .golangci.yml .golangci.yaml .golangci.toml .golangci.json; do
+      if [[ -e "$dir/$cfg" ]]; then
+        printf '%s\n' "$dir/$cfg"
+        return 0
+      fi
+    done
+    [[ $dir == "/" ]] && return 1
+    dir="$(dirname -- "$dir")"
+  done
+}
+
+if [[ $to_stdout -eq 1 ]]; then
+  template
+else
+  template >"$file"
+  echo "wrote $file"
+  if [[ $write_config -eq 1 ]]; then
+    script_dir="$(cd -- "$(dirname -- "$file")" && pwd)"
+    if existing_config="$(find_config_upwards "$script_dir")"; then
+      echo "note: existing config at $existing_config, not writing .golangci.yml"
+    else
+      cp -- "$ASSETS_DIR/.golangci-script.yml" "$script_dir/.golangci.yml"
+      echo "wrote $script_dir/.golangci.yml (script profile)"
+    fi
+  fi
+fi

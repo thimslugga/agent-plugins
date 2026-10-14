@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# check: lint + format-check (+ typecheck) Python code to the python-code-pro
+# standard. Exit 0 clean, 1 findings, 2 tooling/usage error.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: check [--script] [--mypy] [--no-mypy] [path ...]
+
+  --script    relaxed one-off-script profile: ignores D,ANN,T201, skips mypy.
+              Rarely needed: new-script writes a script-profile pyproject.toml
+              that encodes the same relaxations, so plain check just works.
+  --mypy      force mypy --strict (project profile default: auto when
+              [tool.mypy] is configured and mypy is installed)
+  --no-mypy   never run mypy
+  path ...    files/dirs to check (default: .)
+
+Requires ruff on PATH (uv tool install ruff / pipx install ruff).
+EOF
+}
+
+profile="project"
+mypy_mode="auto"
+paths=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --script)
+      profile="script"
+      shift
+      ;;
+    --mypy)
+      mypy_mode="force"
+      shift
+      ;;
+    --no-mypy)
+      mypy_mode="off"
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+[[ ${#paths[@]} -gt 0 ]] || paths=(".")
+
+if ! command -v ruff >/dev/null 2>&1; then
+  echo "error: ruff not found on PATH (uv tool install ruff)" >&2
+  exit 2
+fi
+
+fail=0
+if [[ $profile == "script" ]]; then
+  ruff check --extend-ignore "D,ANN,T201" "${paths[@]}" || fail=1
+else
+  ruff check "${paths[@]}" || fail=1
+fi
+ruff format --check "${paths[@]}" || fail=1
+
+run_mypy=0
+if [[ $mypy_mode == "force" ]]; then
+  command -v mypy >/dev/null 2>&1 \
+    || {
+      echo "error: --mypy given but mypy not on PATH" >&2
+      exit 2
+    }
+  run_mypy=1
+elif [[ $mypy_mode == "auto" && $profile == "project" ]] \
+  && command -v mypy >/dev/null 2>&1 \
+  && [[ -f pyproject.toml ]] && grep -q '^\[tool\.mypy\]' pyproject.toml; then
+  run_mypy=1
+fi
+if [[ $run_mypy -eq 1 ]]; then
+  # The config file is the authority on strictness: both skill templates set
+  # strict = true (the script profile relaxes only the annotation
+  # requirements). Fall back to --strict when forcing without a config file.
+  if [[ -f pyproject.toml ]] && grep -q '^\[tool\.mypy\]' pyproject.toml; then
+    mypy "${paths[@]}" || fail=1
+  else
+    mypy --strict "${paths[@]}" || fail=1
+  fi
+fi
+
+if [[ $fail -eq 0 ]]; then
+  echo "check: clean"
+fi
+exit "$fail"

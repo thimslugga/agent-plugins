@@ -1,0 +1,70 @@
+# golang-pro one-off script profile.
+#
+# Written next to single-file programs by scripts/new-script (skipped when a
+# golangci-lint config is already discoverable in the directory or its
+# parents, or with --no-config). Lets plain `scripts/check` enforce the
+# shared standard with no flags.
+#
+# Same curated base as the strict profile (assets/.golangci.yml) —
+# keep the two in sync. Script-appropriate relaxations:
+#   govet        default analyzers only (no enable-all: lighter, fewer surprises)
+#   errcheck     defaults (blank identifiers and type assertions not flagged)
+#   err113       off: one-shot programs may use errors.New / fmt.Errorf freely
+#   ireturn      off: scripts rarely define interfaces
+#   unparam      off: flag callbacks and handlers often ignore params
+#   dupl         off: a little repetition is fine in a 100-line program
+#   thelper      off: scripts rarely have tests
+#   rowserrcheck, sqlclosecheck off: no SQL in one-shot programs (bodyclose kept)
+
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - unconvert
+    - errcheck
+    - errorlint
+    - errname
+    - nilerr
+    - nilnil
+    - revive
+    - misspell
+    - godot
+    - dupword
+    - whitespace
+    - predeclared
+    - inamedparam
+    - cyclop
+    - modernize
+    - perfsprint
+    - intrange
+    - usestdlibvars
+    - copyloopvar
+    - bodyclose
+    - nolintlint
+  settings:
+    revive:
+      enable-all-rules: false
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: indent-error-flow
+    cyclop:
+      max-complexity: 15
+  exclusions:
+    generated: lax
+    presets:
+      - std-error-handling
+      - common-false-positives
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+
+run:
+  timeout: 5m

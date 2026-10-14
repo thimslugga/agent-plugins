@@ -1,0 +1,22 @@
+# OpenAI agent adaptation notes for the golang-pro skill.
+
+[skill]
+applies_to = ["gpt-5", "gpt-5-codex", "codex"]
+requires_shell = true
+requires_network = false
+
+[notes]
+# The skill's workflow is executed through bash scripts in scripts/.
+# The agent needs shell tool access with a working directory it can write to.
+# Go toolchain (>= 1.26) must be on PATH for check/fmt/new-script output to
+# be verifiable; gofumpt and golangci-lint are required for the full
+# scripts/check profile (see SKILL.md Tooling for install commands).
+# scripts/check exits 0 clean / 1 findings / 2 tooling error — treat exit 2
+# as "install the missing tool", not as a code problem.
+# scripts use `set -euo pipefail` and write files relative to the current
+# working directory; run them from the target module/program directory.
+# The curated configs are golangci-lint v2 format (top-level version: "2").
+# Do not "simplify" the YAML: every settings key was verified against the
+# upstream v2 reference config.
+# //nolint directives must name a specific linter and carry a reason;
+# blanket //nolint is banned by the skill's operating rules.

@@ -1,0 +1,1 @@
+{"bucketName":"YOUR-S3-BUCKET-NAME","defaultExpirationHours":24,"keyPrefix":"uploads","maxUploadSizeMB":100,"region":"us-east-1"}

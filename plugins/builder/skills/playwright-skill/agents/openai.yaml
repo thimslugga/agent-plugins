@@ -1,0 +1,45 @@
+name: playwright-skill
+skill_version: "5.0.0"
+applies_to:
+  - gpt-5-class models via Codex CLI / IDE
+  - OpenAI API agents with file and code-execution tools
+  - other OpenAI-compatible harnesses that load Agent Skills
+
+setup_notes:
+  - Requires Node.js 20 or newer. Run `npm run setup` once in the skill
+    directory to install Playwright and Chromium. `npm run install-all-browsers`
+    adds Firefox and WebKit.
+  - First setup needs network access for the npm install and the browser
+    download. After that the skill works offline against local targets.
+  - Codex-style sandboxes often lack a display and may block browser downloads.
+    Prefer `PW_HEADLESS=true` there and preinstall the browsers in the image
+    or a persistent layer rather than per session.
+
+prompt_format_notes:
+  - The skill is prompt content plus local scripts; there is no OpenAI-specific
+    tool surface to adapt. SKILL.md and references/api-reference.md load the
+    same under any harness.
+  - The agent needs a shell tool with persistent working directory semantics
+    (or literal path substitution, which SKILL.md documents) and the ability
+    to run `node`.
+
+capability_differences:
+  - Upstream is packaged as a Claude Code plugin. Only the skill payload is
+    bundled here; the `.claude-plugin` manifests were dropped.
+  - The skill defaults to a visible browser. On headless-only harnesses set
+    `PW_HEADLESS=true`; the helpers honor it via launchBrowser.
+  - scripts/run.js sets PW_SKILL_DIR for child scripts. If the harness
+    runs helper snippets outside run.js, it must set PW_SKILL_DIR to the
+    skill directory itself.
+
+behavioral_notes:
+  - Scripts go to the OS temp dir as `playwright-test-*.js` unless the user
+    asks to keep them in the project; `PW_SCRIPT_DIR` preserves them with a
+    timestamp on collision.
+  - The skill forbids inventing credentials. Login flows use user-supplied
+    test credentials via environment variables.
+  - Connecting to an existing Chrome over CDP reuses the user's cookies and
+    extensions. Treat it as privileged access and only use it when asked.
+  - The agent must check the resulting page or artifact before claiming
+    success. Screenshots default to the OS temp dir; `PW_ARTIFACT_DIR`
+    redirects them.

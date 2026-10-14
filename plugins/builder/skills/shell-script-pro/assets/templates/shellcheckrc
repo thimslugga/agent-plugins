@@ -1,0 +1,28 @@
+# .shellcheckrc — https://github.com/koalaman/shellcheck/wiki/Config
+
+# Default dialect when it cannot be detected from the shebang or extension.
+shell=bash
+
+# Only report findings at this severity or above: error, warning, info, style.
+# The Shell Script Pro bar is "clean at warning".
+severity=warning
+
+# Colorize output: always, never, or auto (color only when writing to a
+# terminal). `auto` keeps CI logs and piped output clean while giving
+# humans colors interactively.
+color=auto
+
+# Follow `source`d files, resolving relative paths from the script's directory
+# (equivalent to the -x flag).
+external-sources=true
+source-path=SCRIPTDIR
+
+# Also run ShellCheck's optional (strict) checks.
+# Turn individual ones off by name if they don't fit the project, e.g.:
+#   disable=require-variable-braces
+enable=all
+
+# --- Disabled checks (each with a reason) ---
+# SC1091: don't warn about sourced files ShellCheck can't find or open;
+# unresolved sources are common in install scripts and vendored trees.
+disable=SC1091

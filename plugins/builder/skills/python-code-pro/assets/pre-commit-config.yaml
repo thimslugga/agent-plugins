@@ -1,0 +1,10 @@
+# Install the hooks: pre-commit install
+# Pairs with assets/pyproject.toml — runs the same ruff check the skill's
+# scripts/check runs, so the deterministic gate matches the agent-facing one.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format

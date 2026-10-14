@@ -1,0 +1,3 @@
+interface:
+  display_name: "ast-grep"
+  short_description: "Structural code search with AST rules"

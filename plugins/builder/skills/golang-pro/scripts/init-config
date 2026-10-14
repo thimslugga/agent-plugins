@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# init-config: install the shared Go standard into a module:
+# assets/.golangci.yml -> ./.golangci.yml and
+# assets/.editorconfig -> ./.editorconfig.
+# Never overwrites without --force.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ASSETS_DIR="$(cd -- "$SCRIPT_DIR/../assets" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: init-config [--force]
+
+Installs .golangci.yml (curated golangci-lint config) and .editorconfig
+from the skill assets into the current directory.
+
+  --force     overwrite existing files
+EOF
+}
+
+force=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force)
+      force=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      echo "error: unexpected argument $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+install_one() {
+  local src="$1" dest="$2"
+  if [[ -e $dest && $force -eq 0 ]]; then
+    echo "skip: $dest exists (use --force to overwrite)"
+    return 0
+  fi
+  cp -- "$src" "$dest"
+  echo "wrote $dest"
+}
+
+install_one "$ASSETS_DIR/.golangci.yml" ".golangci.yml"
+install_one "$ASSETS_DIR/.editorconfig" ".editorconfig"
+
+# Best-effort YAML validation when PyYAML is available; golangci-lint
+# itself validates the config on run.
+if [[ -f .golangci.yml ]] && python3 -c "import yaml" 2>/dev/null; then
+  if ! python3 -c "import yaml,sys; yaml.safe_load(open('.golangci.yml'))" 2>/dev/null; then
+    echo "error: generated .golangci.yml is not valid YAML" >&2
+    exit 1
+  fi
+fi
+echo "init-config: done"

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# fmt: format Go code to the golang-pro standard. gofumpt is the formatter;
+# goimports organizes imports when available. Never hand-format around it.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: fmt [path ...]
+
+Format Go files with gofumpt (and goimports for import grouping when it is
+on PATH). Default: all *.go files under ., excluding vendor/ and .git/.
+
+Requires gofumpt on PATH (go install mvdan.cc/gofumpt@latest).
+EOF
+}
+
+paths=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if ! command -v gofumpt >/dev/null 2>&1; then
+  echo "error: gofumpt not found on PATH (go install mvdan.cc/gofumpt@latest)" >&2
+  exit 2
+fi
+
+gofiles=()
+if [[ ${#paths[@]} -gt 0 ]]; then
+  for p in "${paths[@]}"; do
+    if [[ -d $p ]]; then
+      while IFS= read -r f; do gofiles+=("$f"); done \
+        < <(find "$p" -name '*.go' -not -path '*/vendor/*' -not -path '*/.git/*')
+    elif [[ -f $p ]]; then
+      gofiles+=("$p")
+    fi
+  done
+else
+  while IFS= read -r f; do gofiles+=("$f"); done \
+    < <(find . -name '*.go' -not -path './vendor/*' -not -path './.git/*')
+fi
+if [[ ${#gofiles[@]} -eq 0 ]]; then
+  echo "fmt: no go files found, nothing to do"
+  exit 0
+fi
+
+gofumpt -w "${gofiles[@]}"
+if command -v goimports >/dev/null 2>&1; then
+  goimports -w "${gofiles[@]}"
+else
+  echo "note: goimports not on PATH, import grouping not normalized"
+  echo "install: go install golang.org/x/tools/cmd/goimports@latest"
+fi
+echo "fmt: done"

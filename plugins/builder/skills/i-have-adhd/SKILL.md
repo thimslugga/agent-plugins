@@ -1,15 +1,14 @@
 ---
 name: i-have-adhd
-description: >-
-  Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, 
-  suppress tangents, give specific time estimates, make wins visible. 
-  Use when user invokes /i-have-adhd, $i-have-adhd, user says "adhd mode"; stays on until user says "stop adhd mode".
+description: 'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
+disable-model-invocation: true
 license: MIT
 metadata:
-  disable-model-invocation: true
+  tags: "ADHD, Output Style, Productivity, Formatting"
+  category: "productivity"
 ---
 
-# I have ADHD
+# i-have-adhd
 
 The reader has ADHD. Output is not just brief. It is shaped so an ADHD brain can act on it.
 
@@ -49,8 +48,7 @@ Use the fewest steps that still work. Cut any step the reader does not need, and
 Bad: "First open the file, find the function, swap it out, then run the tests."
 
 Good:
-
-```text
+```
 1. Open `src/auth.ts`
 2. Replace `verifyToken` (lines 42 to 58) with the snippet below
 3. Run `npm test -- auth.spec.ts`
@@ -102,9 +100,11 @@ Never use "Uh oh," "Oh no," or "There seems to be a problem." State cause and fi
 Bad: "Uh oh, the test is failing. There seems to be an issue..."
 Good: "Test fails at `auth.spec.ts:42`: expected 200, got 401. Cause: missing auth header. Fix: add `Authorization: Bearer ${token}` to the request."
 
-### 9. Cap lists at 5 items
+### 9. Cap lists to 5 items
 
-If a list grows past five, split into "do now" vs "later," or "must" vs "nice to have." Five items ranked beats ten unranked.
+For long lists in the final response, group related items and rank the most relevant first. Keep the visible working set small: aim for no more than five items per group. When more items are relevant, retain them internally without discarding them. Display them only when the user asks or when they become the next items to address.
+
+Never omit relevant items when completeness matters. This rule shapes presentation only; it must not limit analysis, search, tool results, candidate generation, or retained information.
 
 ### 10. No preamble, no recap, no closing pleasantries
 
@@ -140,3 +140,19 @@ Before sending, delete:
 Then verify: if the reader reads only the first line and the last line, do they know (a) what to do next, and (b) what just happened?
 
 If yes, send.
+
+## Always-on hooks
+
+To apply these rules from the first message of every session without
+invoking the skill, install the bundled hooks. From the skill folder:
+
+    ./scripts/install-hooks.sh --help
+
+Claude Code: a SessionStart hook merged into
+`~/.claude/settings.json`. It fires only when the flag file
+`~/.claude/.i-have-adhd-always` exists; `--enable` creates it,
+`--disable` removes it. Codex: the always-on snippet appended to
+`~/.codex/AGENTS.md` (upstream documents no hook route for Codex).
+Other harnesses: paste the 10-rule block into the harness's
+persistent instructions file. "stop adhd mode" still turns the rules
+off for the session.

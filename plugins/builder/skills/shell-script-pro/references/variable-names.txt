@@ -1,0 +1,142 @@
+SHELL SCRIPT TOP CONSTANT AND VARIABLE NAMES
+============================================
+These are the variable names seen most often in Bash and POSIX sh scripts.
+They fall into two kinds: names the shell or environment provides, which
+scripts read, and conventional names that scripts define themselves. The list
+is curated from common practice; it is not a statistically measured ranking.
+
+Conventions
+-----------
+- Use UPPER_SNAKE_CASE for exported environment variables and script-wide
+  constants. Use lower_snake_case for locals inside functions, declared with
+  'local'.
+- Don't reassign the reserved or special names below, such as PATH, IFS, HOME,
+  UID, EUID, PPID, RANDOM, and SECONDS, unless you mean to. UID, EUID, and PPID
+  are read-only in bash.
+- Mark constants read-only:  readonly SCRIPT_DIR="..."
+- Always quote expansions:   "$VAR"   and give defaults:   "${VAR:-default}"
+- Positional and special parameters such as $0, $1, $@, $#, $?, $$, and $!
+  aren't "names", so they are not counted here.
+
+ #   NAME                  PURPOSE
+---  --------------------  ---------------------------------------------------
+
+[ Standard environment variables ]
+  1. PATH                  Command search path
+  2. HOME                  Current user's home directory
+  3. USER                  Current username
+  4. SHELL                 User's login shell
+  5. PWD                   Current working directory
+  6. OLDPWD                Previous working directory (cd -)
+  7. HOSTNAME              Machine hostname (set by bash)
+  8. LANG                  Locale
+  9. LC_ALL                Locale override (e.g. LC_ALL=C for sorting)
+ 10. TERM                  Terminal type (color/capability detection)
+ 11. EDITOR                Preferred editor (e.g. vim)
+ 12. TMPDIR                Temp directory root
+ 13. LOGNAME               Login name (POSIX)
+ 14. PAGER                 Preferred pager (less)
+
+[ Shell built-in / special variables (bash) ]
+ 15. IFS                   Internal field separator (word splitting)
+ 16. BASH_SOURCE           Path of the current script/sourced file
+ 17. BASH_VERSION          Running bash version
+ 18. BASH_REMATCH          Capture groups from [[ =~ ]]
+ 19. LINENO                Current line number (great in ERR traps)
+ 20. FUNCNAME              Function call stack array
+ 21. RANDOM                Pseudo-random integer 0-32767
+ 22. SECONDS               Seconds since shell start (timing)
+ 23. UID                   Real user ID (read-only)
+ 24. EUID                  Effective user ID (root check: EUID -eq 0)
+ 25. PPID                  Parent process ID (read-only)
+ 26. OPTARG                Current option argument in getopts
+ 27. OPTIND                Next option index in getopts
+ 28. PIPESTATUS            Exit codes of each command in last pipeline
+ 29. REPLY                 Default target of 'read' with no name
+ 30. PS4                   Prefix for set -x trace lines
+
+[ XDG base directories ]
+ 31. XDG_CONFIG_HOME       User config root (~/.config)
+ 32. XDG_DATA_HOME         User data root (~/.local/share)
+ 33. XDG_CACHE_HOME        User cache root (~/.cache)
+ 34. XDG_RUNTIME_DIR       Per-user runtime dir (/run/user/$UID)
+
+[ Script metadata & paths ]
+ 35. SCRIPT_NAME           Basename of the script
+ 36. SCRIPT_DIR            Absolute directory containing the script
+ 37. SCRIPT_PATH           Absolute path to the script
+ 38. SCRIPT_VERSION        Script's own version string
+ 39. PROG                  Program name used in usage/messages
+ 40. BASE_DIR              Project base directory
+ 41. ROOT_DIR              Repository/project root
+ 42. CONFIG_DIR            Directory holding config files
+ 43. DATA_DIR              Directory for persistent data
+ 44. CACHE_DIR             Directory for cache data
+ 45. BIN_DIR               Install/target bin directory
+ 46. LIB_DIR               Directory of sourced helper libraries
+
+[ Files ]
+ 47. CONFIG_FILE           Path to the main config file
+ 48. LOG_FILE              Path to the log file
+ 49. LOG_DIR               Directory for logs
+ 50. PID_FILE              Path to PID file
+ 51. LOCK_FILE             Path to lock file (flock)
+ 52. TMP_DIR               Script's mktemp -d working directory
+ 53. TMP_FILE              Script's mktemp temp file
+ 54. BACKUP_DIR            Destination for backups
+ 55. OUTPUT_DIR            Destination for generated output
+ 56. INPUT_FILE            Input file supplied by the user
+
+[ Flags & options ]
+ 57. VERBOSE               Verbose output toggle (0/1)
+ 58. DEBUG                 Debug mode toggle; often enables set -x
+ 59. QUIET                 Suppress non-error output
+ 60. DRY_RUN               Print actions instead of executing
+ 61. FORCE                 Skip safety checks / overwrite
+ 62. ASSUME_YES            Auto-answer prompts (--yes / -y)
+ 63. INTERACTIVE           Whether to prompt the user
+ 64. LOG_LEVEL             DEBUG/INFO/WARN/ERROR threshold
+ 65. NO_COLOR              Disable ANSI color (no-color.org convention)
+ 66. CI                    Set by CI systems; detect non-interactive runs
+ 67. TIMEOUT               Timeout in seconds for waits/network calls
+ 68. MAX_RETRIES           Retry limit for flaky operations
+
+[ Colors & formatting ]
+ 69. RED                   ANSI red      ($'\033[0;31m')
+ 70. GREEN                 ANSI green    ($'\033[0;32m')
+ 71. YELLOW                ANSI yellow   ($'\033[0;33m')
+ 72. BLUE                  ANSI blue     ($'\033[0;34m')
+ 73. CYAN                  ANSI cyan     ($'\033[0;36m')
+ 74. BOLD                  ANSI bold     ($'\033[1m')
+ 75. DIM                   ANSI dim      ($'\033[2m')
+ 76. RESET                 ANSI reset    ($'\033[0m'), also commonly named NC
+
+[ Runtime state ]
+ 77. OS                    Detected OS (linux, darwin)
+ 78. ARCH                  Detected architecture (amd64, arm64)
+ 79. DISTRO                Detected distro ID (fedora, ubuntu)
+ 80. VERSION               Version being installed/processed
+ 81. TIMESTAMP             Formatted date for filenames/logs
+ 82. START_TIME            Start time for duration calculations
+ 83. EXIT_CODE             Captured exit status to return at the end
+ 84. PACKAGES              Array of packages to install
+ 85. ARGS                  Array of remaining positional arguments
+
+[ Network, service & deployment ]
+ 86. HOST                  Target host
+ 87. PORT                  Target port
+ 88. URL                   Generic URL (download/endpoint)
+ 89. API_URL               API base URL
+ 90. API_TOKEN             API credential (never echo or log it)
+ 91. ENVIRONMENT           dev / staging / prod
+
+[ Common local (lowercase) variables ]
+ 92. i                     Loop counter
+ 93. file                  Current file in a loop
+ 94. dir                   Current directory in a loop
+ 95. line                  Current line in: while IFS= read -r line
+ 96. name                  Generic name/identifier
+ 97. count                 Counter/accumulator
+ 98. result                Captured output of a command
+ 99. rc                    Return code captured from $?
+100. tmp                   Short-lived temporary value

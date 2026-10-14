@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# fmt: auto-fix (ruff check --fix) and format (ruff format) Python code.
+# Always run this last; never hand-format around its output.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: fmt [--script] [path ...]
+
+  --script   relaxed one-off-script profile (ignores D,ANN,T201 for the
+             --fix pass, matching scripts/check --script)
+  path ...   files/dirs to format (default: .)
+EOF
+}
+
+profile="project"
+paths=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --script)
+      profile="script"
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+[[ ${#paths[@]} -gt 0 ]] || paths=(".")
+
+if ! command -v ruff >/dev/null 2>&1; then
+  echo "error: ruff not found on PATH (uv tool install ruff)" >&2
+  exit 2
+fi
+
+if [[ $profile == "script" ]]; then
+  ruff check --fix --extend-ignore "D,ANN,T201" "${paths[@]}"
+else
+  ruff check --fix "${paths[@]}"
+fi
+ruff format "${paths[@]}"

@@ -1,0 +1,25 @@
+# OpenAI agent adaptation notes for the shell-script-pro skill.
+
+[skill]
+applies_to = ["gpt-5", "gpt-5-codex", "codex"]
+requires_shell = true
+requires_network = false
+
+[notes]
+# The skill's workflow is executed through bash scripts in scripts/.
+# The agent needs shell tool access with a working directory it can write to.
+# shellcheck and shfmt must be on PATH for scripts/lint.sh and
+# scripts/format.sh (see references/tools.md for install commands).
+# scripts/lint.sh exits 0 clean / 1 findings / 2 tooling error — treat exit 2
+# as "install the missing tool", not as a code problem.
+# scripts/checkbashisms is a vendored Perl script; it needs perl on PATH and
+# prints "unescaped left brace" warnings on modern Perl — the findings are
+# still valid.
+# scripts/init-script.sh writes the new file relative to the current working
+# directory; run it from the target project directory.
+# SKILL.md is the contract; references/ holds the long-form guidance. Read a
+# reference file only when the workflow step points at it.
+# The .editorconfig template's shfmt keys use the current spellings
+# (language_dialect, case_indent); CLI flags passed to shfmt override
+# EditorConfig values, so scripts/lint.sh and scripts/format.sh are not
+# affected by a project's .editorconfig.

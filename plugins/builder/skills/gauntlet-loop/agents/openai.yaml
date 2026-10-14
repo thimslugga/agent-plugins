@@ -1,3 +1,4 @@
 interface:
   display_name: "Gauntlet Loop"
-  short_description: "Turn the user's goal into one short prompt they can paste into a fresh agent session."
+  short_description: "Turn a goal into a prompt that loops until it beats a real quality bar"
+  default_prompt: "Use $gauntlet-loop to turn my goal into a paste-ready gauntlet loop prompt."

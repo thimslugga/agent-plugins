@@ -1,0 +1,19 @@
+# OpenAI agent adaptation notes for the s3-files skill.
+
+skill:
+  applies_to: ["gpt-5", "gpt-5-codex", "codex"]
+  requires_shell: true
+  requires_network: true
+
+notes:
+  # Run the CLIs from the skill root so scripts resolve ../config.json and
+  # ../assets correctly: `node scripts/upload.js <file>`.
+  # `npm install` once after copying config.example.json to config.json.
+  # Library functions (uploadFile, generateDownloadUrl, generateUploadPage)
+  # are quiet and return data; pass { quiet: true } to silence the one
+  # remaining library log line. CLI wrappers print human-readable output.
+  # Pre-signed URLs cannot exceed 7 days; the skill clamps larger values.
+  # Only generate upload pages on explicit user request: the page URL is a
+  # bearer capability valid for 1 hour of uploads.
+  # If a script fails, its error message carries the AWS service reason
+  # (AccessDenied, NoSuchBucket, ...); check references/iam-policy.md first.

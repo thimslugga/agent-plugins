@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# init-config: install the shared Python standard into a project:
+# assets/pyproject.toml -> ./pyproject.toml,
+# assets/pre-commit-config.yaml -> ./.pre-commit-config.yaml,
+# assets/pyrightconfig.json -> ./pyrightconfig.json (editor-only), and
+# assets/.editorconfig -> ./.editorconfig,
+# with __PROJECT_NAME__ / __SOURCE_DIR__ substituted. Never overwrites
+# without --force.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ASSETS_DIR="$(cd -- "$SCRIPT_DIR/../assets" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: init-config [--name <project-name>] [--src-dir <dir>] [--force]
+
+Installs pyproject.toml, .pre-commit-config.yaml, pyrightconfig.json
+(editor-only Pylance/pyright config), and .editorconfig from the skill assets.
+Placeholders substituted: __PROJECT_NAME__, __SOURCE_DIR__.
+
+  --name      distribution name (default: current directory name, sanitized)
+  --src-dir   top-level source directory (default: src)
+  --force     overwrite existing files
+EOF
+}
+
+name=""
+src_dir="src"
+force=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name)
+      name="$2"
+      shift 2
+      ;;
+    --src-dir)
+      src_dir="$2"
+      shift 2
+      ;;
+    --force)
+      force=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "error: unknown flag $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      echo "error: unexpected argument $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [[ -z $name ]]; then
+  name="$(basename -- "$PWD")"
+  name="$(printf '%s' "$name" | tr '[:upper:]_ ' '[:lower:]--' | tr -cd '[:lower:][:digit:]-')"
+  [[ -n $name ]] || {
+    echo "error: could not derive a name, pass --name" >&2
+    exit 2
+  }
+fi
+
+install_one() {
+  local src="$1" dest="$2"
+  if [[ -e $dest && $force -eq 0 ]]; then
+    echo "skip: $dest exists (use --force to overwrite)"
+    return 0
+  fi
+  sed -e "s/__PROJECT_NAME__/${name}/g" -e "s#__SOURCE_DIR__#${src_dir}#g" \
+    "$src" >"$dest"
+  echo "wrote $dest"
+}
+
+pyright_existed=0
+[[ -e pyrightconfig.json ]] && pyright_existed=1
+
+install_one "$ASSETS_DIR/pyproject.toml" "pyproject.toml"
+install_one "$ASSETS_DIR/pre-commit-config.yaml" ".pre-commit-config.yaml"
+install_one "$ASSETS_DIR/pyrightconfig.json" "pyrightconfig.json"
+install_one "$ASSETS_DIR/.editorconfig" ".editorconfig"
+
+if ! python3 -c "import tomllib,sys; tomllib.load(open('pyproject.toml','rb'))" 2>/dev/null; then
+  echo "error: generated pyproject.toml is not valid TOML" >&2
+  exit 1
+fi
+if [[ $pyright_existed -eq 0 && -e pyrightconfig.json ]]; then
+  # pyrightconfig.json is JSONC (// comments allowed); strip full-line
+  # comments before validating.
+  if ! python3 -c '
+import json, re
+text = open("pyrightconfig.json", encoding="utf-8").read()
+json.loads(re.sub(r"(?m)^\s*//.*$", "", text))
+' 2>/dev/null; then
+    echo "error: generated pyrightconfig.json is not valid JSON" >&2
+    exit 1
+  fi
+fi
+if grep -qE '__PROJECT_NAME__|__SOURCE_DIR__' pyproject.toml .pre-commit-config.yaml pyrightconfig.json .editorconfig 2>/dev/null; then
+  echo "error: unreplaced placeholders remain" >&2
+  exit 1
+fi
+echo "init-config: done (name=$name src-dir=$src_dir)"

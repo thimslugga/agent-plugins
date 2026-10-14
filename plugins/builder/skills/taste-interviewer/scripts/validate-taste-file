@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Validate a taste-interviewer voice profile markdown file.
+
+Checks the structural contract from references/output-schema.md:
+frontmatter fields, required sections, quick-reference-card-first ordering,
+and a non-empty Never list. Exits 0 when there are no errors (warnings are
+advisory), 1 on any error, 2 on unreadable input.
+
+Usage:
+    validate-taste-file <profile.md> [--json]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+FRONTMATTER_REQUIRED = ("name", "version", "updated")
+FRONTMATTER_RECOMMENDED = ("interview_date", "questions_asked", "format")
+
+FRONTMATTER_BLOCK_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.S)
+
+SECTION_CHECKS = (
+    ("quick reference card", re.compile(r"^##\s+quick reference card", re.I | re.M)),
+    ("Always list", re.compile(r"^###\s+always\b", re.I | re.M)),
+    ("Never list", re.compile(r"^###\s+never\b", re.I | re.M)),
+    ("anti-overfitting guide", re.compile(r"^##\s+anti-overfitting guide", re.I | re.M)),
+    ("model usage instructions", re.compile(r"^##\s+how to use this file", re.I | re.M)),
+)
+
+TRANSCRIPT_RE = re.compile(r"^##\s+(interview transcript|transcript|appendix)", re.I | re.M)
+FREQUENCY_RE = re.compile(r"\b(HARD RULE|STRONG TENDENCY|LIGHT PREFERENCE)\b")
+LIST_ITEM_RE = re.compile(r"^\s*[-*]\s+\S", re.M)
+HEADING_RE = re.compile(r"^#{1,3}\s+", re.M)
+
+
+def parse_frontmatter(text: str) -> dict[str, str] | None:
+    match = FRONTMATTER_BLOCK_RE.match(text)
+    if not match:
+        return None
+    fields: dict[str, str] = {}
+    for line in match.group(1).splitlines():
+        key, sep, value = line.partition(":")
+        if sep:
+            fields[key.strip().lower()] = value.strip()
+    return fields
+
+
+def section_body(text: str, heading_re: re.Pattern[str]) -> str:
+    """Return the text under the first heading matching heading_re, up to the
+    next heading of equal or higher level."""
+    match = heading_re.search(text)
+    if not match:
+        return ""
+    level = len(re.match(r"#+", match.group(0)).group(0))  # type: ignore[union-attr]
+    rest = text[match.end():]
+    nxt = re.search(rf"^#{{1,{level}}}\s+", rest, re.M)
+    return rest[: nxt.start()] if nxt else rest
+
+
+def validate(text: str) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    fields = parse_frontmatter(text)
+    if fields is None:
+        errors.append("missing frontmatter block (--- ... ---) at the top of the file")
+    else:
+        for key in FRONTMATTER_REQUIRED:
+            if not fields.get(key):
+                errors.append(f"frontmatter is missing required field: {key}")
+        for key in FRONTMATTER_RECOMMENDED:
+            if not fields.get(key):
+                warnings.append(f"frontmatter is missing recommended field: {key}")
+
+    found: dict[str, re.Match[str] | None] = {}
+    for label, pattern in SECTION_CHECKS:
+        match = pattern.search(text)
+        found[label] = match
+        if match is None:
+            errors.append(f"missing required section: {label}")
+
+    card = found["quick reference card"]
+    transcript = TRANSCRIPT_RE.search(text)
+    if transcript is not None:
+        if card is None:
+            pass  # already reported as a missing section
+        elif card.start() > transcript.start():
+            errors.append(
+                "quick reference card must come before the interview transcript "
+                "(models weight early context)"
+            )
+    else:
+        warnings.append("no interview transcript / appendix section found")
+
+    never_body = section_body(text, SECTION_CHECKS[2][1])
+    if never_body and not LIST_ITEM_RE.search(never_body):
+        errors.append("Never list is empty: taste is refusals, this list must be specific")
+
+    if not FREQUENCY_RE.search(text):
+        warnings.append(
+            "no frequency labels found (HARD RULE / STRONG TENDENCY / LIGHT PREFERENCE)"
+        )
+
+    return errors, warnings
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate a voice profile markdown file.")
+    parser.add_argument("path", help="path to the voice profile .md file")
+    parser.add_argument("--json", action="store_true", help="emit results as JSON")
+    args = parser.parse_args(argv)
+
+    path = Path(args.path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        print(f"[ERROR] cannot read {path}: {exc}", file=sys.stderr)
+        return 2
+
+    errors, warnings = validate(text)
+    ok = not errors
+
+    if args.json:
+        print(json.dumps({"ok": ok, "errors": errors, "warnings": warnings}, indent=2))
+    else:
+        for message in errors:
+            print(f"[ERROR] {message}")
+        for message in warnings:
+            print(f"[WARN] {message}")
+        if ok and not warnings:
+            print("OK: profile passes all checks")
+        elif ok:
+            print("OK: profile passes (with warnings)")
+
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

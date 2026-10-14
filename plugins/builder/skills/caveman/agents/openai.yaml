@@ -1,3 +1,7 @@
 interface:
   display_name: "Caveman"
-  short_description: "Respond terse like smart caveman. All technical substance stay. Only fluff die."
+  short_description: "Terse caveman voice: answer first, fluff gone, facts kept"
+  default_prompt: "Use $caveman to answer terse like a smart caveman until I say stop."
+
+policy:
+  allow_implicit_invocation: false

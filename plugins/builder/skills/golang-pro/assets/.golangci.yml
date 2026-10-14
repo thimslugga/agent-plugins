@@ -1,0 +1,108 @@
+# golang-pro curated golangci-lint v2 config (strict profile for modules).
+#
+# Install with scripts/init-config. Schema verified against
+# https://raw.githubusercontent.com/golangci/golangci-lint/main/.golangci.reference.yml
+# Only settings keys confirmed in the v2 reference are used.
+#
+# Deliberately OFF (see references/design.md for rationale):
+#   wrapcheck      - conflicts with the Go 1.13 wrapping doctrine (don't wrap
+#                    implementation details into your API)
+#   gosec          - valuable but noisy; run separately, not as a gate
+#   gochecknoglobals - fights idiomatic globals (sentinel errors, template.Must)
+#   lll            - the Google style guide sets no fixed line length
+#   wsl, nlreturn  - gofumpt owns whitespace; no formatter-vs-linter fights
+#   nakedret, nonamedreturns - naked returns are idiomatic in short functions
+#   gocritic       - full set is noisy; staticcheck covers the important ground
+#   exhaustive     - noisy without per-enum configuration
+#   godox          - TODO/FIXME tracking is a workflow choice, not a gate
+#   nestif, funlen, gocognit - one complexity family only (cyclop)
+# Opt-in when the codebase needs them: testpackage, depguard, forbidigo.
+
+version: "2"
+
+linters:
+  default: none
+  enable:
+    # Correctness: the vet analyzers, static analysis, dead code
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - unconvert
+    - unparam
+    # Errors as values: every error must be handled and handled correctly
+    - errcheck
+    - errorlint
+    - errname
+    - err113
+    - nilerr
+    - nilnil
+    # Interfaces: small, consumer-side, concrete returns
+    - ireturn
+    - interfacebloat
+    # Docs and naming (revive is curated to doc-comment rules only;
+    # staticcheck already covers identifier style, so no double-reporting)
+    - revive
+    # Hygiene: spelling, comments, whitespace, builtins
+    - misspell
+    - godot
+    - dupword
+    - whitespace
+    - predeclared
+    - inamedparam
+    # Complexity: one family, explicit threshold (a team choice, not a law)
+    - cyclop
+    - dupl
+    # Tests
+    - thelper
+    # Modernization and micro-performance (honor the go directive)
+    - modernize
+    - perfsprint
+    - intrange
+    - copyloopvar
+    - usestdlibvars
+    - tagalign
+    # Resources: never leak a body, row, or connection
+    - bodyclose
+    - rowserrcheck
+    - sqlclosecheck
+    # Directives: keep //nolint honest
+    - nolintlint
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        # shadow is false-positive-prone and not in vet's default set
+        - shadow
+        # fieldalignment suggests struct-field reordering churn
+        - fieldalignment
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    revive:
+      enable-all-rules: false
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: indent-error-flow
+    cyclop:
+      max-complexity: 15
+    interfacebloat:
+      max: 10
+    dupl:
+      threshold: 150
+  exclusions:
+    # v2 default is strict (v1 was lax): generated code is excluded only when
+    # it follows the `// Code generated ... DO NOT EDIT.` convention
+    generated: strict
+    presets:
+      - std-error-handling
+      - common-false-positives
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+
+run:
+  timeout: 5m

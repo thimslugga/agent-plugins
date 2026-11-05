@@ -18,6 +18,22 @@ scripts. `references/` holds the detailed guidance; `assets/` holds the
 templates, including an alternate minimal template (`template.sh`) and
 editor snippets for BATS tests.
 
+## Harness notes
+
+- Needs shell access with a writable working directory; no network.
+- `shellcheck` and `shfmt` must be on PATH for `scripts/lint.sh` and
+  `scripts/format.sh` (install commands in `references/tools.md`).
+- `scripts/lint.sh` exits 0 clean / 1 findings / 2 tooling error. Treat exit 2
+  as "install the missing tool", not a code problem.
+- `scripts/checkbashisms` needs `perl` on PATH and prints "unescaped left
+  brace" warnings on modern Perl; the findings are still valid.
+- `scripts/init-script.sh` writes the new file relative to the current working
+  directory; run it from the target project directory.
+- Read a `references/` file only when the `SKILL.md` workflow step points at it.
+- The `.editorconfig` template's shfmt keys use the current spellings
+  (`language_dialect`, `case_indent`). CLI flags override EditorConfig, so
+  `lint.sh` and `format.sh` are unaffected by a project's `.editorconfig`.
+
 ## References
 
 - POSX Shell Guide — <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html>

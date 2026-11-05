@@ -26,8 +26,8 @@ Upstream: https://github.com/cathrynlavery/diagram-design (MIT, v2.6.68 at insta
   - `export_svg.py` — HTML to standalone SVG.
   - `drawio_extract.py`, `excalidraw_extract.py`, `mermaid_extract.py` — import
     helpers.
-- `agents/` — harness adaptation notes (`openai.yaml`, `harness-notes.md`).
-- `LICENSE`, `ATTRIBUTION.md` — upstream license and credit.
+- `agents/openai.yaml` — Codex UI metadata.
+- `LICENSE` — upstream license.
 
 ## Usage
 
@@ -44,11 +44,44 @@ a new project. Named client profiles can be saved and reused.
 Export: SVG via `scripts/export_svg.py` (pure Python). PNG requires Playwright
 plus Chromium; see `references/export.md`.
 
+## Harness notes
+
+- Needs file read/write and a way to show the user an HTML file (preview,
+  artifact, or attachment).
+- Don't preload all 60 references; load only the type (`type-*.md`) and
+  semantic reference the task needs.
+- Upstream's Claude Code slash commands (doctor, export-diagram, import-*,
+  profile) are not bundled. Harnesses without a /command surface treat each as
+  a named procedure backed by its reference doc: `references/doctor.md`,
+  `export.md`, `import-drawio.md`, `import-excalidraw.md`, `import-mermaid.md`,
+  `profiles.md`.
+- In headless runs where the section-0 style-guide gate can't ask, fall back to
+  the shipped default tokens and say so.
+- Run `scripts/self_check.py` on every generated diagram before delivery.
+- Without Playwright, deliver HTML/SVG and note the PNG limitation.
+- No remote assets beyond the approved Google Fonts stylesheet. In
+  network-restricted sandboxes, prefer system font stacks or note the font
+  substitution.
+- The skill defers quick unicode diagrams to wiretext and attribute-only
+  before/after comparisons to tables; don't force a diagram where prose or a
+  table serves better.
+
 ## Testing
 
+- At install (2026-10-09), `SKILL.md` frontmatter parsed with `name`,
+  `description`, `license: MIT`, and payload version 2.6.
 - `python3 -m py_compile scripts/*.py` — all five scripts compile.
 - `python3 scripts/self_check.py assets/example-flowchart.html` — passes (`OK`).
 - All 60 `references/*.md` links from `SKILL.md` resolve.
 
 Not run here: full diagram generation (needs a model pass) and PNG export
 (needs Playwright/Chromium in the target environment).
+
+## Attribution
+
+- Upstream: [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design), v2.6.68.
+- License: MIT, Copyright (c) 2025 Cathryn Lavery (`LICENSE` kept).
+- Payload copied verbatim from upstream `skills/diagram-design/`; nothing in
+  `SKILL.md`, `references/`, `assets/`, or `scripts/` was modified. Added:
+  `README.md`, `agents/openai.yaml`, and the `LICENSE` copy. Upstream's
+  dev-only `docs/`, `scripts/`, and CI workflows are intentionally not bundled.

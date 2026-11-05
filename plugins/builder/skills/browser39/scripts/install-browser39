@@ -1,0 +1,223 @@
+#!/usr/bin/env bash
+#
+# install-browser39: install the browser39 single-binary MCP server.
+#
+# Downloads the browser39 release matching the current OS/arch from GitHub
+# and installs it into ~/.local/bin (override with --dir / BROWSER39_INSTALL_DIR).
+# Idempotent: skips re-download when already installed unless --force is given.
+#
+# Usage:
+#   install-browser39 [--version vX.Y.Z] [--dir DIR] [--force] [--dry-run] [-h|--help]
+#
+# Layered config (defaults < env < CLI args):
+#   BROWSER39_REPO         GitHub repo (default: alejandroqh/browser39)
+#   BROWSER39_VERSION      version tag (e.g. v1.8.0) or "latest" (default: latest)
+#   BROWSER39_INSTALL_DIR  install directory (default: ~/.local/bin)
+#   VERBOSE=1 / QUIET=1    logging knobs
+
+set -euo pipefail
+
+# --- constants ---------------------------------------------------------------
+readonly BROWSER39_SCRIPT_NAME="${0##*/}"
+readonly BROWSER39_DEFAULT_REPO='alejandroqh/browser39'
+readonly BROWSER39_DEFAULT_VERSION='latest'
+readonly BROWSER39_DEFAULT_INSTALL_DIR="${HOME}/.local/bin"
+
+# --- logging (color on tty, VERBOSE/QUIET knobs) ------------------------------
+__log_color() {
+  local code="$1"
+  shift
+  if [[ -t 2 ]]; then
+    printf '\033[%sm%s\033[0m\n' "${code}" "$*" >&2
+  else
+    printf '%s\n' "$*" >&2
+  fi
+}
+
+__log_info() {
+  [[ ${QUIET:-0} == '1' ]] && return 0
+  __log_color '32' "info: $*"
+}
+
+__log_warn() { __log_color '33' "warn: $*"; }
+
+__log_error() { __log_color '31' "error: $*"; }
+
+__log_debug() {
+  [[ ${VERBOSE:-0} == '1' ]] || return 0
+  __log_color '36' "debug: $*"
+}
+
+browser39_install::die() {
+  __log_error "$*"
+  exit 1
+}
+
+trap 'browser39_install::die "unexpected failure at line ${LINENO}"' ERR
+
+# --- usage -------------------------------------------------------------------
+browser39_install::usage() {
+  cat <<EOF
+Usage: ${BROWSER39_SCRIPT_NAME} [OPTIONS]
+
+Install the browser39 single-binary MCP server from GitHub releases.
+
+Options:
+  --version vX.Y.Z   version tag to install (default: latest; BROWSER39_VERSION)
+  --dir DIR          install directory (default: ~/.local/bin; BROWSER39_INSTALL_DIR)
+  --force            re-download and overwrite an existing install
+  --dry-run          print what would be done, change nothing
+  -h, --help         show this help and exit
+
+Environment:
+  BROWSER39_REPO         GitHub repo (default: alejandroqh/browser39)
+  BROWSER39_VERSION      version tag or "latest"
+  BROWSER39_INSTALL_DIR  install directory
+  VERBOSE=1              debug logging
+  QUIET=1                suppress info logging
+EOF
+}
+
+# --- args (layered: defaults < env < CLI) -------------------------------------
+BROWSER39_VERSION="${BROWSER39_VERSION:-${BROWSER39_DEFAULT_VERSION}}"
+BROWSER39_INSTALL_DIR="${BROWSER39_INSTALL_DIR:-${BROWSER39_DEFAULT_INSTALL_DIR}}"
+BROWSER39_REPO="${BROWSER39_REPO:-${BROWSER39_DEFAULT_REPO}}"
+BROWSER39_FORCE=0
+BROWSER39_DRY_RUN=0
+
+browser39_install::parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --version)
+        [[ $# -ge 2 ]] || browser39_install::die '--version needs a value'
+        BROWSER39_VERSION="$2"
+        shift 2
+        ;;
+      --dir)
+        [[ $# -ge 2 ]] || browser39_install::die '--dir needs a value'
+        BROWSER39_INSTALL_DIR="$2"
+        shift 2
+        ;;
+      --force)
+        BROWSER39_FORCE=1
+        shift
+        ;;
+      --dry-run)
+        BROWSER39_DRY_RUN=1
+        shift
+        ;;
+      -h | --help)
+        browser39_install::usage
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *)
+        browser39_install::die "unknown option: $1 (see --help)"
+        ;;
+    esac
+  done
+}
+
+# --- platform detection -------------------------------------------------------
+browser39_install::detect_asset() {
+  local os arch
+  os="$(uname -s)"
+  arch="$(uname -m)"
+  __log_debug "uname: ${os} ${arch}"
+  case "${os}" in
+    Linux) os='linux' ;;
+    Darwin) os='macos' ;;
+    MINGW* | MSYS* | CYGWIN*) os='windows' ;;
+    *)
+      browser39_install::die "unsupported OS: ${os} (grab a binary from the releases page manually)"
+      ;;
+  esac
+  case "${arch}" in
+    x86_64 | amd64) arch='x64' ;;
+    aarch64 | arm64) arch='arm64' ;;
+    *) browser39_install::die "unsupported arch: ${arch}" ;;
+  esac
+  if [[ ${os} == 'windows' ]]; then
+    [[ ${arch} == 'x64' ]] || browser39_install::die 'no windows arm64 release published'
+    printf 'browser39-%s-%s.exe' "${os}" "${arch}"
+  else
+    printf 'browser39-%s-%s' "${os}" "${arch}"
+  fi
+}
+
+# --- version resolution -------------------------------------------------------
+browser39_install::resolve_tag() {
+  local version="$1" tag
+  if [[ ${version} == 'latest' ]]; then
+    __log_info 'resolving latest release tag from GitHub'
+    tag="$(curl -fsSL --retry 3 "https://api.github.com/repos/${BROWSER39_REPO}/releases/latest" \
+      | grep -o '"tag_name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)"
+    [[ -n ${tag} ]] || browser39_install::die 'could not resolve latest release tag'
+    printf '%s' "${tag}"
+  elif [[ ${version} == v* ]]; then
+    printf '%s' "${version}"
+  else
+    printf 'v%s' "${version}"
+  fi
+}
+
+# --- download and install -----------------------------------------------------
+browser39_install::download_and_install() {
+  local tag="$1" asset="$2" target="$3"
+  local url="https://github.com/${BROWSER39_REPO}/releases/download/${tag}/${asset}"
+  local work
+  work="$(mktemp -d)" || browser39_install::die 'mktemp failed'
+  __log_debug "downloading ${url}"
+  if ! curl -fSL --retry 3 -o "${work}/${asset}" "${url}"; then
+    rm -rf "${work}"
+    browser39_install::die "download failed: ${url}"
+  fi
+  mkdir -p "${BROWSER39_INSTALL_DIR}"
+  mv "${work}/${asset}" "${target}"
+  chmod +x "${target}"
+  rm -rf "${work}"
+}
+
+# --- main ---------------------------------------------------------------------
+browser39_install::main() {
+  browser39_install::parse_args "$@"
+  command -v curl >/dev/null 2>&1 || browser39_install::die 'curl is required but not on PATH'
+
+  local asset tag target_name target
+  asset="$(browser39_install::detect_asset)"
+  tag="$(browser39_install::resolve_tag "${BROWSER39_VERSION}")"
+
+  target_name='browser39'
+  [[ ${asset} == *.exe ]] && target_name='browser39.exe'
+  target="${BROWSER39_INSTALL_DIR}/${target_name}"
+
+  if [[ ${BROWSER39_DRY_RUN} == '1' ]]; then
+    printf 'would install: %s\n' "${BROWSER39_REPO}@${tag} (${asset})"
+    printf 'to:            %s\n' "${target}"
+    return 0
+  fi
+
+  if [[ -x ${target} && ${BROWSER39_FORCE} != '1' ]]; then
+    __log_info "browser39 already installed at ${target} (use --force to reinstall)"
+  else
+    __log_info "installing ${BROWSER39_REPO} ${tag} (${asset}) to ${target}"
+    browser39_install::download_and_install "${tag}" "${asset}" "${target}"
+  fi
+
+  __log_info 'verifying install'
+  "${target}" --version || browser39_install::die 'installed binary failed to run'
+
+  case ":${PATH}:" in
+    *":${BROWSER39_INSTALL_DIR}:"*) ;;
+    *)
+      __log_warn "${BROWSER39_INSTALL_DIR} is not on PATH; add: export PATH=\"${BROWSER39_INSTALL_DIR}:\$PATH\""
+      ;;
+  esac
+
+  __log_info 'done'
+}
+
+browser39_install::main "$@"

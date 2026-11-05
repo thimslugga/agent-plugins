@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Release Download"
+  short_description: "Download tagged or latest GitHub release files"
+  default_prompt: "Use $gh-release-download to download the latest source archive from https://github.com/Ataraxy-Labs/sem."

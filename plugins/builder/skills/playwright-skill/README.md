@@ -23,20 +23,26 @@ Upstream: https://github.com/lackeyjb/playwright-skill (MIT, v5.0.0).
   `getExtraHeadersFromEnv`.
 - `package.json` / `package-lock.json` — `npm run setup` installs Playwright
   and Chromium; `npm run install-all-browsers` adds Firefox and WebKit.
-- `agents/` — harness adaptation notes (`openai.yaml`, `harness-notes.md`).
-- `LICENSE`, `ATTRIBUTION.md` — upstream license and credit.
+- `agents/openai.yaml` — Codex UI metadata.
+- `LICENSE` — upstream MIT license (Copyright (c) 2025 lackeyjb).
 
 Local layout note: upstream ships `run.js` and `lib/` at the skill root; they
-were moved to `scripts/` per local convention. `scripts/run.js` resolves the
-skill root as its parent, so `npm install` / `npm run setup` still run in the
-skill root and `SKILL_DIR` still means the directory containing `SKILL.md`.
-`SKILL.md` path references were updated to match; nothing else changed.
+were moved to `scripts/` per local convention. Upstream's `API_REFERENCE.md`
+moved to `references/api-reference.md`. `scripts/run.js` resolves the skill
+root as `path.resolve(__dirname, '..')` instead of `__dirname`.
+`npm install` / `npm run setup` and `node_modules` still use the skill root.
+`SKILL_DIR` and `PW_SKILL_DIR` still mean the directory containing `SKILL.md`.
+`package.json` now points `main` at `scripts/run.js`. `SKILL.md` path
+references were updated to match. No logic changed.
+
+Upstream dev files are not bundled: `.claude-plugin/`, `.github/`, `tests/`,
+`CHANGELOG.md`, and `CONTRIBUTING.md`.
 
 ## Usage
 
 Drop this directory into any agent's skills folder (for example
-`~/workspace/skills/playwright-skill/`). Requires Node.js 20+ and network
-access on first setup:
+`~/workspace/skills/playwright-skill/`). Requires Node.js 20+, npm, a shell
+tool, and network access on first setup:
 
 ```bash
 cd ~/workspace/skills/playwright-skill && npm run setup
@@ -52,9 +58,12 @@ set `PW_HEADLESS=true`.
 
 ## Testing
 
+Verification at install (2026-10-09):
+
 - `node --check scripts/run.js scripts/lib/helpers.js` — syntax clean.
 - `SKILL.md` frontmatter parses (name, description, license MIT,
   compatibility note, version 5.0.0).
 - The `references/api-reference.md` link from `SKILL.md` resolves.
+- `package.json` parses as JSON; `main` points at the moved executor.
 - Upstream's own test suite (`tests/` in the repo) was not run here: it needs
   a real Chromium install, which this sandbox cannot provide reliably.

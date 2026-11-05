@@ -1,0 +1,3 @@
+interface:
+  display_name: "ASD-STE100"
+  short_description: "Rewrite agent instructions in Simplified Technical English"

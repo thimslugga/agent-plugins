@@ -1,0 +1,3 @@
+interface:
+  display_name: "Git Workflow"
+  short_description: "Feature-branch workflow, conventional commits, and PR lifecycle"

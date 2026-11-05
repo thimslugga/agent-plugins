@@ -33,11 +33,12 @@ closers, sidebars, and hedging.
 
 - `SKILL.md`: the whole skill. Front matter carries
   `disable-model-invocation: true`, so it never applies until invoked.
-- `agents/openai.yaml`: display name and short description for
-  OpenAI-compatible agents, with `allow_implicit_invocation: false` to
-  preserve the opt-in posture.
+- `agents/openai.yaml`: Codex UI metadata (`display_name`,
+  `short_description`, `default_prompt`), with
+  `allow_implicit_invocation: false` to preserve the opt-in posture.
+  Other harnesses ignore it.
 - `agents/gemini.toml`: Gemini CLI custom-command definition (`/i-have-adhd`).
-- `LICENSE`: MIT (Ayoub Ghriss). See `ATTRIBUTION.md`.
+- `LICENSE`: MIT (Ayoub Ghriss). See Attribution below.
 
 This install carries the skill plus its always-on hooks. The upstream
 repo also ships evals (`evals/`, `scripts/run_evals.py`), an OpenCode
@@ -82,6 +83,27 @@ Install the skill folder for your harness, then start any session with
 
 Turn it off with "stop adhd mode" or "normal mode".
 
+## Harness setup
+
+| Harness | Install to |
+|---|---|
+| Claude Code | `~/.claude/skills/i-have-adhd/` |
+| Codex | `~/.codex/skills/i-have-adhd/` or project `.agents/skills/i-have-adhd/` |
+| Kiro | `~/.kiro/skills/i-have-adhd/` or project `.kiro/skills/i-have-adhd/` |
+| Muse | `~/workspace/skills/i-have-adhd/` |
+| Pi | `~/.pi/agent/skills/i-have-adhd/` or project `.agents/skills/i-have-adhd/` |
+
+- Gemini CLI: copy `agents/gemini.toml` to
+  `~/.gemini/commands/i-have-adhd.toml`.
+- Always-on in other harnesses: paste the ten-rule "Output style" block
+  into the harness's persistent instructions file (e.g. `AGENTS.md`).
+- The hook scripts are fail-open: any error exits 0, so a broken
+  install never blocks session start.
+- Inside an agent harness the system prompt outranks this skill:
+  announce tool calls when the harness requires it, keep time estimates
+  aimed at whoever executes the steps, and let task or plan tools do the
+  per-turn restating instead of duplicating it in prose.
+
 ## Testing
 
 No tests ship with the skill folder itself. Upstream keeps its eval
@@ -90,3 +112,13 @@ the always-on hooks, install docs, plugin packaging, and judge
 scenarios. If you change `SKILL.md`, the meaningful check is a read
 through the Before/After pairs in the repo's README: each rule must
 still be illustrated by both sides.
+
+## Attribution
+
+- Upstream: [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss.
+- License: MIT, Copyright (c) 2026 Ayoub Ghriss (`LICENSE` kept).
+- Changes: the bundled hooks resolve `../SKILL.md` and use a
+  `__SKILL_DIR__` manifest placeholder instead of upstream's plugin
+  layout (see Hooks). Added `README.md` and `agents/openai.yaml`. Not
+  carried over: upstream evals, the OpenCode plugin, and multi-harness
+  packaging (see Layout).

@@ -42,16 +42,39 @@ user demanded them.
 
 - `SKILL.md`: the whole skill. Faithful to upstream, including the
   Portability section for non-Claude-Code agents.
-- `agents/openai.yaml`: display name and short description for
-  OpenAI-compatible agents.
+- `agents/openai.yaml`: Codex UI metadata (`display_name`,
+  `short_description`, `default_prompt`). Other harnesses ignore it.
 - `LICENSE` note: the upstream repo is licensed CC BY 4.0; the zip the
-  user supplied contained only `SKILL.md`. See `ATTRIBUTION.md`.
+  user supplied contained only `SKILL.md`. See Attribution below.
 
 ## Usage
 
 `/gauntlet-loop <goal>`. Answer the bar question when it offers
 candidates, paste the returned prompt into a fresh session, and let it
 loop. Or say "run it here" to execute the loop in the current session.
+
+## Harness setup
+
+| Harness | Install to |
+|---|---|
+| Claude Code | `~/.claude/skills/gauntlet-loop/` |
+| Codex | `~/.codex/skills/gauntlet-loop/` or project `.agents/skills/gauntlet-loop/` |
+| Kiro | `~/.kiro/skills/gauntlet-loop/` or project `.kiro/skills/gauntlet-loop/` |
+| Muse | `~/workspace/skills/gauntlet-loop/` |
+| Pi | `~/.pi/agent/skills/gauntlet-loop/` or project `.agents/skills/gauntlet-loop/` |
+
+On Pi the command is `/skill:gauntlet-loop` (needs
+`"enableSkillCommands": true` in settings.json).
+
+The skill's Portability section names `/loop` and `ultracode` as Claude
+Code features. How the loop runs elsewhere:
+
+- Claude Code: the skill's literal template (`/loop` pacing,
+  `ultracode` orchestration).
+- Codex, Kiro, Muse: builder and critic pairs as parallel subagents;
+  keep looping in the session until the critic picks ours blind.
+- Pi: stock Pi has no built-in subagents; run sequentially or via the
+  pi-submarine extension, keeping the parent session in charge.
 
 ## Testing
 
@@ -61,3 +84,15 @@ concrete goal (e.g. "landing page for my running brand") and verify
 the output is one 120-to-180-word block with a baked-in,
 named-and-fetchable bar, blind critic comparison, and no
 over-specification.
+
+## Attribution
+
+- Upstream: [robonuggets/gauntlet-loop](https://github.com/robonuggets/gauntlet-loop),
+  `.claude/skills/gauntlet-loop/SKILL.md` (copied 2026-10-04).
+- Technique and original prompt by Matt Shumer, named while building
+  Claude of Duty (mshumer/Claude-of-Duty).
+- License: Creative Commons Attribution 4.0 International (CC BY 4.0).
+  The user-supplied zip contained only `SKILL.md`; the license file
+  lives in the upstream repo.
+- Changes: `SKILL.md` is unchanged from upstream. Added `README.md` and
+  `agents/openai.yaml`.

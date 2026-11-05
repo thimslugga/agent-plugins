@@ -1,18 +1,14 @@
 ---
 name: karpathy-guidelines
-description: >-
-  Think before coding, keep changes surgical, and execute goal-driven. Use when writing, editing, or refactoring code to surface assumptions and tradeoffs, avoid touching unrelated code, clean up only your own mess, and define verifiable success criteria before implementing. Pairs with ponytail (simplicity) and the *-pro skills (language standards).
-license: 'MIT'
+description: "Think before coding, keep changes surgical, and execute goal-driven. Use when writing, editing, reviewing, or refactoring code to surface assumptions and tradeoffs, avoid touching unrelated code, clean up only your own mess, and define verifiable success criteria before implementing. Pairs with ponytail (simplicity)."
+license: MIT
 ---
 
 # Karpathy Guidelines
 
-Four behavioral rules for coding work, distilled from the Karpathy guidelines
-(see `ATTRIBUTION.md`): think before you code, write only what's needed, touch
-only what you must, and define success before you start.
+Behavioral guidelines to reduce common LLM coding mistakes, derived from Andrej Karpathy's observations on LLM coding pitfalls.
 
-**Tradeoff:** these rules bias toward caution over speed. For trivial tasks
-(typo fixes, obvious one-liners), use judgment.
+**Tradeoff:** these rules bias toward caution over speed. For trivial tasks (e.g. typo fixes, obvious one-liners), use judgment.
 
 ## 1. Think Before Coding
 
@@ -43,7 +39,7 @@ irreversible) or when confusion persists after investigation.
 simplify.
 
 This principle overlaps the `ponytail` skill, which covers it in depth
-(intensity levels, the 7-rung ladder, when not to be lazy). When both skills
+(intensity levels, the six-step ladder, when not to be lazy). When both skills
 are loaded, `ponytail` is the authority on simplicity; this section is the
 summary.
 
@@ -90,16 +86,10 @@ work") require constant clarification.
 
 Before reporting a coding task done:
 
-1. Assumptions: stated up front; any hard-to-undo step was confirmed, not guessed.
-2. Diff review: every changed line traces to the request; no drive-by refactors.
+1. Assumptions and plan: stated before implementation, not after mistakes; any hard-to-undo step was confirmed, not guessed.
+2. Diff review: every changed line traces to the request; no drive-by refactors or rewrites of code that should have been left alone.
 3. Orphans: anything your edits made unused is removed; pre-existing dead code untouched.
 4. Success criteria: each criterion from section 4 is met, with evidence (test output, command results), not assertion.
-
-## How to know it's working
-
-- Diffs contain only requested changes.
-- Assumptions, plans, and verification steps come before implementation, not after mistakes.
-- No rewrites caused by touching code that should have been left alone.
 
 ## Precedence
 

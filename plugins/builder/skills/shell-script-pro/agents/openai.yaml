@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shell Script Pro"
+  short_description: "Write and review shellcheck-clean, shfmt-formatted shell scripts"

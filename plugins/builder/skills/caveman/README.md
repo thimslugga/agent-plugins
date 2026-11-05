@@ -78,11 +78,12 @@ replaces.
 
 - `SKILL.md`: the skill, plus a short "Hook install" assist section.
   Customized from upstream: the Classical-Chinese (`megacave` /
-  `/caveman wenyan`) parts were removed (see `ATTRIBUTION.md`);
+  `/caveman wenyan`) parts were removed (see Attribution below);
   everything else unchanged.
-- `agents/openai.yaml`: display name and short description for
-  OpenAI-compatible agents, with `allow_implicit_invocation: false` to
-  keep the opt-in posture.
+- `agents/openai.yaml`: Codex UI metadata (`display_name`,
+  `short_description`, `default_prompt`), with
+  `allow_implicit_invocation: false` to keep the opt-in posture.
+  Other harnesses ignore it.
 - `LICENSE`: Apache 2.0 (Julius Brussee).
 
 Not carried over from the repo: the `ultracave` sibling skill, the
@@ -115,9 +116,45 @@ Claude Code and the standalone OpenCode plugin read stored mode state.
 Other hosts report the mode known in the conversation, or `unknown`
 if none is known.
 
+## Harness setup
+
+| Harness | Install to |
+|---|---|
+| Claude Code | `~/.claude/skills/caveman/` |
+| Codex | `~/.codex/skills/caveman/` or project `.agents/skills/caveman/` |
+| Kiro | `~/.kiro/skills/caveman/` or project `.kiro/skills/caveman/` |
+| Muse | `~/workspace/skills/caveman/` |
+| Pi | `~/.pi/agent/skills/caveman/` or project `.agents/skills/caveman/` |
+
+- Inside an agent harness the system prompt outranks this skill:
+  announce tool calls when the harness requires it, and give status
+  lines or confirmations when asked. The harness decides *when* you
+  speak, caveman decides *how*.
+- There is no cross-session mode tracker: the hooks resolve the
+  configured default on every session start. Other hosts relay the
+  hook's `CAVEMAN MODE ACTIVE` banner when present. Never infer a mode
+  from the configured default.
+
 ## Testing
 
 No tests ship with the skill folder itself; upstream keeps its evals
 in the repo (`evals/`, not carried over). The sanity check after any
 edit is the Example output section above: the caveman answer must be
 shorter, answer-first, and keep `useMemo` and the causal fact intact.
+
+## Attribution
+
+- Upstream: [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), `skills/caveman/` (`SKILL.md`, `README.md`; fetched 2026-10-04).
+- License: Apache License 2.0 (copied to `LICENSE`).
+- Customizations (per the user's request): removed the Classical-Chinese
+  parts (the `/caveman wenyan` alias, all `megacave` references, its
+  sibling-skills table row, the `/megacave` invocation, its example
+  output and benchmark number). The Persistence paragraph now says
+  `/caveman ultra` points at the `ultracave` sibling, which is not
+  included. A "Hook install" assist section was added at the end of
+  `SKILL.md`; otherwise `SKILL.md` is faithful to upstream. The README
+  is rewritten in this repo's format.
+- Original work for this install (not upstream code): `hooks/` (both
+  SessionStart scripts, the `hooks.json` template, and
+  `caveman-activate.md`, derived from `SKILL.md`),
+  `scripts/install-hooks.sh`, `README.md`, `agents/openai.yaml`.

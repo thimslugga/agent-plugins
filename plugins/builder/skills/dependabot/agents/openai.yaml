@@ -1,0 +1,3 @@
+interface:
+  display_name: "Dependabot"
+  short_description: "Configure and manage GitHub Dependabot"

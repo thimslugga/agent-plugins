@@ -1,0 +1,165 @@
+# pyproject.toml
+
+[project]
+name = "unslop-ui"
+version = "0.1.0"
+description = "Scanner for AI-generated design tells in web codebases."
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "mypy",
+]
+
+[tool.uv]
+package = false
+exclude-newer = "3 days"
+index-strategy = "first-index"
+
+[tool.ruff]
+# target-version is inferred from [project].requires-python; set it here only if you don't declare that.
+#target-version = "py310"
+line-length = 100
+indent-width = 4
+include = ["pyproject.toml", "scripts/**/*.py"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or McCabe complexity (`C901`) by default.
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "N",        # pep8-naming
+    "I",        # isort
+    "B",        # bugbear
+    "Q",        # flake8-quotes (formatter-conflicting codes ignored below)
+    "C4",       # comprehensions
+    "FA",       # future annotations
+    "DTZ",      # naive datetimes
+    "LOG",      # flake8-logging
+    "G",        # logging format (G004: no f-strings in logs)
+    "EM",       # exception messages
+    "S",        # bandit
+    "UP",       # pyupgrade
+    "SIM",      # simplify
+    "PTH",      # pathlib
+    "RET",      # returns
+    "ARG",      # unused arguments
+    "D",        # pydocstyle
+    "ANN",      # annotations
+    "TID",      # tidy imports / banned-api
+    "PGH",      # pygrep hooks (blanket noqa / type: ignore)
+    "RUF",      # ruff-specific
+    "C90",      # mccabe
+    "PL",       # pylint (includes PLE1205/PLE1206)
+    "EXE",      # executable/shebang
+    "PYI",      # stub files
+    "T20",      # print / breakpoint
+    "BLE",      # blind except
+    "TRY",      # exception anti-patterns
+    "ASYNC",    # blocking calls in async
+    "PT",       # pytest style
+    "ERA",      # commented-out code
+    "PERF",     # performance anti-patterns
+]
+ignore = [
+    # Conflict with / redundant under `ruff format`
+    "W191", "E111", "E114", "E117", "D206", "D300",
+    "Q000", "Q001", "Q002", "Q003",
+]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+# Tell Ruff about loggers it can't infer from the variable name,
+# e.g. a logger imported from your own module:
+#logger-objects = ["myapp.log.logger"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/test_*.py" = ["S101", "ANN", "D", "ARG", "PLR2004"]
+"scripts/*.py" = ["T201"]   # CLI scripts: stdout is the real output
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+# Add your own property-like decorators so D401 skips them too:
+# property-decorators = ["functools.cached_property"]
+
+[tool.ruff.lint.pep8-naming]
+# Framework-dictated names (ast.NodeVisitor, docutils, etc.); unittest names are ignored by default
+extend-ignore-names = ["visit_*", "generic_visit", "depart_*"]
+
+# forces leaner functions
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"os.path".msg = "Use pathlib.Path"
+#"requests".msg = "Use httpx (project standard)"   # example: substitute your own choices
+#"httpx".msg = "Use requests"
+#"django".msg = "Use flask"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+# See https://mypy.readthedocs.io/en/latest/config_file.html for more mypy options.
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+enable_error_code = ["explicit-override"]
+
+#[tool.pytest.ini_options]
+#markers = [
+#    "asyncio: marks tests that use asyncio",
+#    "integration: marks integration tests",
+#    "e2e: marks end-to-end tests",
+#    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+#]
+#asyncio_mode = "strict"
+#testpaths = ["scripts"]
+#python_files = "test_*.py"
+#python_classes = "Test*"
+#python_functions = "test_*"
+#addopts = "--cov=scripts --cov-report=term-missing --cov-fail-under=90 -m 'not e2e'"
+
+#[tool.coverage.run]
+#omit = ["scripts/test_*.py"]

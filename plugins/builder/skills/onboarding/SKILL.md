@@ -49,7 +49,7 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 - **Local markdown**: issues live as files under `.scratch/<feature>/` in this repo (good for solo projects or repos without a remote)
 - **Other** (Jira, Linear, etc.): ask the user to describe the workflow in one paragraph; the skill will record it as freeform prose
 
-Record the choice in `docs/agents/issue-tracker.md`. The GitHub and GitLab templates carry a "PRs as a request surface" flag, defaulted **off**. Leave it off and don't raise it: a user who wants external PRs in the triage queue can flip the flag in the file later.
+Record the choice in `docs/agents/issue-tracker.md`. For GitHub and GitLab, include a "PRs as a request surface" flag set to **off**. Leave it off and don't raise it: a user who wants external PRs in the triage queue can flip the flag in the file later.
 
 **Section B: Triage label vocabulary.** Skip this section entirely if the `triage` skill isn't installed (exploration told you), since an uninstalled skill needs no labels.
 
@@ -104,15 +104,11 @@ The block:
 
 Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
 
-Then write the docs files using the seed templates in this skill folder as a starting point:
+Write the docs files from the choices confirmed in steps 2 and 3:
 
-- [issue-tracker-github.md](./issue-tracker-github.md): GitHub issue tracker
-- [issue-tracker-gitlab.md](./issue-tracker-gitlab.md): GitLab issue tracker
-- [issue-tracker-local.md](./issue-tracker-local.md): local-markdown issue tracker
-- [triage-labels.md](./triage-labels.md): label mapping (only if `triage` is installed)
-- [domain.md](./domain.md): domain doc consumer rules + layout
-
-For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
+- `docs/agents/issue-tracker.md`: record the tracker, repository or project identifier, and the workflow and tools used to manage issues. For local markdown, record the `.scratch/<feature>/` layout. For other trackers, use the user's workflow description.
+- `docs/agents/triage-labels.md`: record the five canonical roles and their chosen label strings. Write this file only if `triage` is installed.
+- `docs/agents/domain.md`: record the context layout, paths for context files and architecture decisions, and when skills must read them.
 
 ### 5. Done
 

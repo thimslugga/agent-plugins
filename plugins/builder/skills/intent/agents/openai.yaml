@@ -1,20 +1,3 @@
 interface:
   display_name: "Intent"
-  short_description: "UX strategy system for AI tools: 17 skills covering research, strategy, flows, content, accessibility, ethics, and measurement"
-  upstream: "https://github.com/ghaida/intent"
-  version: "1.6.0"
-  license: "CC0-1.0"
-
-applies_to:
-  models: "OpenAI-based agents (gpt-5.x, Codex CLI) consuming this skill"
-
-adaptation_notes:
-  - "No slash-command runner here: 'invoke /strategize' in the text means read skills/strategize/SKILL.md (relative to the intent skill root). All such references have been rewritten to relative paths in this port."
-  - "The entry point is the root SKILL.md (upstream intent foundation skill): establish project context there first, then follow its routing logic to the specialist skill."
-  - "The six upstream agent prompts live in upstream-agents/ (noor, ember, wren, vigil, rune, sage). To use one, spawn a subagent with the file as its system prompt; they are not auto-registered anywhere."
-  - "No tools, hooks, or binaries are involved: the skill is pure markdown guidance plus wireframe reference assets (viewer.html/css/js). Nothing to install or execute."
-  - "The invocation banner in SKILL.md is part of the skill's documented behavior: emit it first when the skill is invoked, then continue."
-
-capability_differences:
-  - "No visual companion rendering is assumed: skills that 'offer visual companion output' (rendered HTML diagrams, wireframe viewer) can produce those as files, but only where the harness can display them."
-  - "Research methods that assume live user interviews or surveys degrade to planning artifacts (interview guides, test plans) when no users are available."
+  short_description: "Plan and evaluate UX with research and design strategy"

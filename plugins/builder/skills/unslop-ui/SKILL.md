@@ -12,7 +12,7 @@ description: >-
   dashboard, or front-end component, especially when the user wants a site to look
   custom or human rather than AI-generated, or mentions AI slop, looks AI-made,
   generic, vibe-coded, Tailwind, or shadcn. Trigger even if they never say vibe-coded.
-compatibility: "Requires Python 3 (stdlib only, no dependencies)"
+compatibility: "Requires Python 3.10+ (stdlib only, no dependencies)"
 ---
 
 # unslop-ui

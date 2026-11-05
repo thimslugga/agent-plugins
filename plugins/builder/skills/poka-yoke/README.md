@@ -2,7 +2,7 @@
 
 Mistake-proof code so misuse cannot be expressed, rather than warning against it. Design interfaces where invalid states are unrepresentable; audit existing code for footguns; after an incident, fix the hazard (the property that made the mistake available), not just the mistake. Every finding is ranked on two axes: what happens when the mistake occurs (Control / Warning / Detection / rung zero) and how the device notices (contact / fixed-value / motion-step inspection).
 
-Ported from github/awesome-copilot (MIT; original method by rainmanjam/poka-yoke). See ATTRIBUTION.md.
+Ported from github/awesome-copilot (MIT; original method by rainmanjam/poka-yoke). See Attribution below.
 
 ## Layout
 
@@ -11,14 +11,16 @@ Ported from github/awesome-copilot (MIT; original method by rainmanjam/poka-yoke
 - `references/lang-python.md`, `references/lang-typescript.md`, `references/lang-rust-go.md`: language-specific patterns
 - `scripts/detect_hazards.py`: stdlib-only heuristic scanner (Python 3.9+): regex rules plus a Python AST pass; `--paths` / `--diff` / `--staged` / `--since`, `--severity`, `--id`, `--all`, `--json`
 - `assets/devices/lint/README.md`: how to enable each linter the scanner defers to (ruff, mypy, ESLint, typescript-eslint, eslint-plugin-jest, Clippy, golangci-lint); added in this port, upstream's script pointed at this path but the directory did not exist
-- `agents/openai.yaml`: Codex interface metadata
-- `agents/harness-notes.md`: per-harness install paths
+- `agents/openai.yaml`: Codex UI metadata (`display_name`, `short_description`); other harnesses ignore it
 
 ## Usage
 
 Loads for mistake-proofing work: "make invalid states unrepresentable", "poka-yoke this repo", "review this diff for ways to get it wrong", "make sure this never happens again", type-safe API design, and post-incident reviews. Especially for money, auth, permissions, deletion, migrations, and pipelines where failure is silent.
 
 Run the scanner first (`python3 scripts/detect_hazards.py --paths .`), then read for what no scanner can see. The scanner reports what it scanned: zero files exits 2, never a false all-clear. Findings exit 1, clean exits 0, so `--diff --json` gates CI.
+
+The scanner needs no install step or third-party packages. From another
+directory, run `python3 <skill-dir>/scripts/detect_hazards.py`.
 
 ## Harness setup
 
@@ -37,3 +39,9 @@ Run the scanner first (`python3 scripts/detect_hazards.py --paths .`), then read
 - Exit contract verified: findings exit 1, clean scan exits 0, zero-files exits 2 with "NOT an all-clear" on stderr.
 - `assets/devices/lint/README.md` now exists, so the script's hint no longer dangles.
 - `agents/openai.yaml` parses as YAML.
+
+## Attribution
+
+- Upstream: [github/awesome-copilot](https://github.com/github/awesome-copilot); original method by [rainmanjam/poka-yoke](https://github.com/rainmanjam/poka-yoke).
+- License: MIT.
+- Changes in this port: added `assets/devices/lint/README.md` (upstream's scanner pointed at that path, but the directory did not exist); added `README.md` and `agents/openai.yaml`.

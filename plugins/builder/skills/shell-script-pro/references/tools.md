@@ -62,7 +62,7 @@ repos:
 ## ShellCheck
 
 ```bash
-shellcheck -x -S warning script.sh   # -x follows source; fail on warning+
+shellcheck -x -S style -o all script.sh   # -x follows source; report everything
 shellcheck -S error script.sh        # errors only (looser)
 ```
 
@@ -120,7 +120,7 @@ Do not lint or reformat code that you do not own (e.g. vendored scripts (`vendor
 
 ### EditorConfig
 
-- Install the ready-made `.editorconfig` template file with `scripts/init-configs.sh` (template source: `assets/templates/editorconfig`).
+- Install the ready-made `.editorconfig` template file with `scripts/init-configs.sh` (template source: `assets/editorconfig`).
 - shfmt reads `.editorconfig` in project directory
 - shfmt-specific keys for shell files:
   - `indent_size` (like `-i`)
@@ -142,13 +142,13 @@ Do not lint or reformat code that you do not own (e.g. vendored scripts (`vendor
 
 checkbashisms is a Perl script, maintained by the Debian people, to check for portability issues that occur when a shell script has been only written with bash in mind. It is part of the [devscripts](https://packages.debian.org/sid/devscripts) package in Debian. Fortunately, the script is also available in Fedora by installing the so-called `devscripts-checkbashisms` package (which can also be used on RHEL by way). checkbashisms focuses on the syntax constructs that are typically only available in bash, so this is a good and easy way to check your scripts on distributions where /bin/sh is bash by default.
 
-This skill vendors a copy at `scripts/checkbashisms` (upstream devscripts 2.0.0.x, GPL-2.0) so the check is available without installing devscripts. Run it on any `#!/bin/sh` script as part of the POSIX-target workflow:
+This skill vendors a copy at `scripts/checkbashisms` (current upstream devscripts `main`, GPL-2.0+) so the check is available without installing devscripts. Run it on any `#!/bin/sh` script as part of the POSIX-target workflow:
 
 ```bash
 scripts/checkbashisms myscript.sh
 ```
 
-Note: the vendored copy is from 2011 and prints Perl "unescaped left brace" warnings on modern Perl; the findings themselves are still valid. Where the distro package is available (`devscripts` on Debian/Ubuntu, `devscripts-checkbashisms` on Fedora), prefer it.
+Note: the vendored copy was refreshed from upstream `main` on 2026-11-09 (the `###VERSION###` placeholder is filled with that label). Where the distro package is available (`devscripts` on Debian/Ubuntu, `devscripts-checkbashisms` on Fedora), prefer it.
 
 Debian/Ubuntu:
 

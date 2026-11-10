@@ -1,11 +1,12 @@
-# .shellcheckrc — https://github.com/koalaman/shellcheck/wiki/Config
+# .shellcheckrc
 
 # Default dialect when it cannot be detected from the shebang or extension.
 shell=bash
+#shell=
 
 # Only report findings at this severity or above: error, warning, info, style.
-# The Shell Script Pro bar is "clean at warning".
-severity=warning
+# The Shell Script Pro bar is "clean at style" (everything, plus enable=all).
+severity=style
 
 # Colorize output: always, never, or auto (color only when writing to a
 # terminal). `auto` keeps CI logs and piped output clean while giving

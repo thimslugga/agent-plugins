@@ -1,0 +1,27 @@
+# ~/.profile -- login environment, POSIX sh syntax only.
+#
+# Read by: sh/dash/ash login shells, and by Bash login shells ONLY when neither
+# ~/.bash_profile nor ~/.bash_login exists. Zsh does not read it.
+# Put here: PATH and exported variables that every program should inherit.
+# Keep out: aliases, functions, prompt, anything that prints.
+
+path_prepend() {
+  case ":${PATH}:" in
+    *":$1:"*) ;;
+    *) PATH="$1${PATH:+:${PATH}}" ;;
+  esac
+}
+
+path_prepend "${HOME}/.local/bin"
+path_prepend "${HOME}/bin"
+export PATH
+
+export EDITOR=vim
+export VISUAL=vim
+export PAGER=less
+
+# Debian/Ubuntu layout (no ~/.bash_profile): let Bash login shells load the rc
+# file from here. Delete this block if ~/.bash_profile does the delegation.
+if [ -n "${BASH_VERSION:-}" ] && [ -r "${HOME}/.bashrc" ]; then
+  . "${HOME}/.bashrc"
+fi

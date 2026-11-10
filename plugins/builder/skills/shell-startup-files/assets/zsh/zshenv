@@ -1,0 +1,20 @@
+# ~/.zshenv -- EVERY zsh reads this: scripts, 'ssh host cmd', make recipes.
+# (Always in $HOME, or in $ZDOTDIR if that is already set in the environment.)
+#
+# Keep it tiny and silent. No aliases, prompt, compinit, or output.
+# macOS: do NOT set PATH here; /etc/zprofile runs path_helper afterwards and
+# moves your entries behind the system ones. Use ~/.zprofile.
+
+export EDITOR=vim
+export VISUAL=vim
+export PAGER=less
+
+# Optional: keep the other zsh files out of $HOME.
+# export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
+
+# Ubuntu: stop /etc/zsh/zshrc from running compinit before ~/.zshrc does.
+# skip_global_compinit=1
+
+# Linux only, if 'ssh host cmd' needs your PATH and the login chain is skipped:
+# typeset -U path PATH
+# path=("$HOME/.local/bin" $path)

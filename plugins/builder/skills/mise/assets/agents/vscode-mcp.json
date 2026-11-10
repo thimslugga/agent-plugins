@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "mise": {
+      "type": "stdio",
+      "command": "/absolute/path/to/mise",
+      "args": ["--cd", "${workspaceFolder}", "mcp"]
+    }
+  }
+}

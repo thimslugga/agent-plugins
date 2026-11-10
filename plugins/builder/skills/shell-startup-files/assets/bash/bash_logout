@@ -1,0 +1,7 @@
+# ~/.bash_logout -- runs when a Bash LOGIN shell exits. Not read by
+# non-login shells (a Linux terminal tab closing does not run it).
+
+# Clear the console on logout from a real tty.
+if [ "${SHLVL:-1}" = 1 ] && [ -x /usr/bin/clear ]; then
+  /usr/bin/clear
+fi

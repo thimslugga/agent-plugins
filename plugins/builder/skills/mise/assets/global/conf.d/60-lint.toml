@@ -1,0 +1,30 @@
+# Linters, formatters and language servers.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+shellcheck = "latest"
+shfmt = "latest"
+ruff = "latest"
+ty = "latest"
+golangci-lint = "latest"
+gofumpt = "latest"
+rust-analyzer = "latest"
+stylua = "latest"
+oxlint = "latest"
+oxfmt = "latest"  # npm backend: needs node
+prettier = "latest"  # npm backend: needs node
+yamllint = "latest"  # pipx backend: needs uv
+yamlfmt = "latest"
+"pipx:ryl" = "latest"  # not in the registry; PyPI package, needs uv
+cfn-lint = "latest"  # pipx backend: needs uv
+tombi = "latest"
+taplo = "latest"
+hadolint = "latest"
+actionlint = "latest"
+tflint = "latest"
+rumdl = "latest"
+lychee = "latest"
+vale = "latest"
+typos = "latest"
+editorconfig-checker = "latest"

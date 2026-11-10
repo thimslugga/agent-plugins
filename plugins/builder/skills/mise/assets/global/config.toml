@@ -1,0 +1,17 @@
+# Global mise settings: copy to ~/.config/mise/config.toml (merge by hand if
+# the file already exists). Tools live in conf.d/ fragments, which mise loads
+# in alphabetical order before this file.
+
+[settings]
+# Read .python-version, .nvmrc/.node-version, .go-version/go.mod and
+# rust-toolchain.toml in projects that have no mise.toml entry for the tool.
+idiomatic_version_file_enable_tools = ["python", "node", "go", "rust"]
+
+# Print what mise loads when you enter a project (needs mise activate).
+[settings.status]
+show_tools = true
+show_env = false
+
+# Optional: send `mise use -g <tool>` to its own fragment instead of this file.
+# [settings.write_targets]
+# tools = "~/.config/mise/conf.d/90-adhoc.toml"

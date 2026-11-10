@@ -1,0 +1,42 @@
+# Node.js project with pnpm. Copy to the project root as mise.toml.
+# Expects package.json with dev, lint, test and build scripts.
+min_version = "2026.10.0"
+
+[tools]
+node = "24"
+pnpm = "latest"
+
+[env]
+NODE_ENV = { default = "development" }
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.install]
+description = "Install the locked dependencies"
+alias = "i"
+run = "pnpm install --frozen-lockfile"
+sources = ["package.json", "pnpm-lock.yaml"]
+outputs = ["node_modules/.pnpm/lock.yaml"]
+
+[tasks.dev]
+description = "Start the development server"
+depends = ["install"]
+run = "pnpm run dev"
+
+[tasks.lint]
+description = "Run the lint script"
+depends = ["install"]
+run = "pnpm run lint"
+
+[tasks.test]
+description = "Run the tests"
+depends = ["install"]
+run = "pnpm test"
+
+[tasks.build]
+description = "Build the project"
+depends = ["install"]
+run = "pnpm run build"
+
+[tasks.ci]
+description = "Everything CI runs"
+depends = ["lint", "test", "build"]

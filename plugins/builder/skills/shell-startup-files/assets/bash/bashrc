@@ -1,0 +1,40 @@
+# ~/.bashrc -- interactive Bash shells.
+#
+# Read by: interactive non-login shells, login shells through ~/.bash_profile,
+# and on most Linux builds also by non-interactive 'ssh host cmd'.
+
+# --- Section A: runs for 'ssh host cmd' too. Keep it silent and cheap. ------
+# Only put exports here that remote commands really need.
+# export PATH="${HOME}/.local/bin:${PATH}"   # prefer path_prepend from ~/.profile
+
+# --- Interactive guard: nothing above this line may print. ------------------
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+
+# --- Section B: interactive only. -------------------------------------------
+# Fedora/RHEL/Amazon Linux: system-wide interactive defaults.
+if [ -r /etc/bashrc ]; then
+  . /etc/bashrc
+fi
+
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth
+shopt -s histappend checkwinsize
+
+PS1='\u@\h \w \$ '
+
+alias ll='ls -l'
+alias la='ls -la'
+
+# Optional drop-in directory (Fedora ships this convention).
+if [ -d "${HOME}/.bashrc.d" ]; then
+  for rc_file in "${HOME}"/.bashrc.d/*; do
+    if [ -r "${rc_file}" ]; then
+      . "${rc_file}"
+    fi
+  done
+  unset rc_file
+fi

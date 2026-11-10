@@ -9,7 +9,7 @@ set -euo pipefail
 # byte-for-byte; @DESCRIPTION@, @NAME@, and @GUARD@ are substituted afterwards
 # with bash string replacement (no sed, no escaping pitfalls).
 
-SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_NAME="${BASH_SOURCE[0]##*/}"
 readonly SCRIPT_NAME
 
 usage() {
@@ -89,122 +89,156 @@ shopt -s inherit_errexit 2>/dev/null || true # bash < 4.4 lacks this option
 #######################################
 # Constants
 #######################################
-SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_NAME="${BASH_SOURCE[0]##*/}"
 readonly SCRIPT_NAME
 
-# Logging knobs (environment overrides welcome):
-#   VERBOSE=true  debug output      QUIET=true  silence INFO
-#   COLOR=false   disable colors    (colors also auto-disable when stderr
-#                                    is not a terminal)
-VERBOSE="${VERBOSE:-false}"
-QUIET="${QUIET:-false}"
-COLOR="${COLOR:-true}"
+# Logging knobs (environment seeds the lowercase script state; -v / -n
+# set it too). Colors are decided once in setup_colors: stderr must be a
+# terminal and NO_COLOR (https://no-color.org) must be unset.
+#   VERBOSE=true  debug output      QUIET=true  silence info
+verbose="${VERBOSE:-false}"
+quiet="${QUIET:-false}"
+# DRY_RUN=true (or -n): run_cmd prints instead of executing.
+dry_run="${DRY_RUN:-false}"
 
-readonly __RED=$'\033[0;31m'
-readonly __YELLOW=$'\033[0;33m'
-readonly __CYAN=$'\033[0;36m'
-readonly __GRAY=$'\033[2;37m'
-readonly __RESET=$'\033[0m'
+# ANSI codes; stay empty (no escape codes at all) unless setup_colors runs
+# on a color-capable terminal.
+color_red=''
+color_yellow=''
+color_cyan=''
+color_gray=''
+color_reset=''
+
+# printf's %(...)T time builtin needs bash 4.2+ (macOS ships 3.2).
+HAS_PRINTF_TIME='false'
+if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 402)); then
+  HAS_PRINTF_TIME='true'
+fi
+readonly HAS_PRINTF_TIME
+
+# Working directory created by the script (cleanup removes it).
+tmp_dir=''
 
 # Re-entrancy guard for the ERR trap handler below.
-__ON_ERROR_ACTIVE='false'
+__on_error_active='false'
 
 #######################################
 # Functions
 #######################################
 
 #######################################
-# Write a timestamped log line to stderr. Stdout stays reserved for the
-# script's real output (data other tools consume).
+# Enable ANSI colors when stderr is a terminal and NO_COLOR is unset.
 # Globals:
-#   COLOR
+#   color_red, color_yellow, color_cyan, color_gray, color_reset
+#######################################
+setup_colors() {
+  if [[ -t 2 && -z ${NO_COLOR:-} ]]; then
+    color_red=$'\033[0;31m'
+    color_yellow=$'\033[0;33m'
+    color_cyan=$'\033[0;36m'
+    color_gray=$'\033[2;37m'
+    color_reset=$'\033[0m'
+  fi
+
+  return 0
+}
+
+#######################################
+# Write a timestamped log line to stderr. Stdout stays reserved for the
+# script's real output (data other tools consume). The level tag is the
+# only colored part; with colors off the escape variables are empty.
+# Globals:
+#   HAS_PRINTF_TIME, color_reset
 # Arguments:
-#   $1 - level: INFO, WARN, ERROR, DEBUG, FATAL.
-#   $2 - ANSI color code.
+#   $1 - level tag: INFO, WARN, ERROR, DEBUG.
+#   $2 - ANSI color for the tag (may be empty).
 #   $@ - message parts.
 # Outputs:
 #   Writes to stderr.
 #######################################
-__log() {
+log() {
   local level="$1"
-  local color="$2"
+  local tag_color="$2"
   shift 2
   local ts
-  ts="$(date +'%Y-%m-%dT%H:%M:%S%z')"
-  if [[ ${COLOR} == 'true' && -t 2 ]]; then
-    printf '%s[%s] %-5s %s%s%s\n' "${__GRAY}" "${ts}" "${level}" "${color}" "$*" "${__RESET}" >&2
+
+  if [[ ${HAS_PRINTF_TIME} == 'true' ]]; then
+    printf -v ts '%(%Y-%m-%dT%H:%M:%S%z)T' -1
   else
-    printf '[%s] %-5s %s\n' "${ts}" "${level}" "$*" >&2
+    ts="$(date +'%Y-%m-%dT%H:%M:%S%z')"
   fi
 
-  return 0
+  printf '[%s] %s%-5s%s %s\n' \
+    "${ts}" "${tag_color}" "${level}" "${color_reset}" "$*" >&2
 }
 
-log_info() {
-  [[ ${QUIET} == 'true' ]] && return 0
-  __log 'INFO' "${__CYAN}" "$@"
+info() {
+  [[ ${quiet} == 'true' ]] && return 0
+  log 'INFO' "${color_cyan}" "$@"
 }
 
-log_warn() {
-  __log 'WARN' "${__YELLOW}" "$@"
+warn() {
+  log 'WARN' "${color_yellow}" "$@"
 }
 
-log_error() {
-  __log 'ERROR' "${__RED}" "$@"
+err() {
+  log 'ERROR' "${color_red}" "$@"
 }
 
-log_debug() {
-  [[ ${VERBOSE} == 'true' ]] || return 0
-  __log 'DEBUG' "${__GRAY}" "$@"
-}
-
-#######################################
-# Print a call-stack backtrace to stderr (outermost call last).
-# Outputs:
-#   Writes to stderr.
-#######################################
-__backtrace() {
-  local frame=1
-  local info
-  local line
-  local func
-  local src
-
-  # The caller builtin prints "line func file" per frame; frame 0 is
-  # this function's own caller, so start at 1.
-  while info="$(caller "${frame}" 2>/dev/null)"; do
-    read -r line func src <<<"${info}"
-    printf '  at %s (%s:%s)\n' "${func:-<top>}" "${src}" "${line}" >&2
-    ((++frame)) # prefix ++ never evaluates to 0: safe under set -e
-  done
-
-  return 0
+debug() {
+  [[ ${verbose} == 'true' ]] || return 0
+  log 'DEBUG' "${color_gray}" "$@"
 }
 
 #######################################
-# Log a fatal error, kill leftover background jobs, and exit. The ERR
-# trap routes every unchecked failure here with its line number.
+# Run a side-effecting command, honouring -n / DRY_RUN.
+# Globals:
+#   dry_run
 # Arguments:
-#   --status=N  exit status (default 1); remaining args form the message.
+#   $@ - a command and its arguments. No pipes, no redirection.
+# Returns:
+#   0 in dry-run mode, otherwise the command's exit status.
 #######################################
-log_fatal() {
-  local status=1
-  if [[ ${1:-} == --status=* ]]; then
-    status="${1#--status=}"
-    shift
+run_cmd() {
+  if [[ ${dry_run} == 'true' ]]; then
+    info "DRY-RUN: $*"
+    return 0
   fi
 
-  __log 'FATAL' "${__RED}" "$@"
-  if [[ ${VERBOSE} == 'true' ]]; then
-    __backtrace
-  fi
+  debug "exec: $*"
+  "$@"
+}
 
+#######################################
+# Kill leftover background jobs of this shell.
+# Returns:
+#   0 always.
+#######################################
+kill_children() {
   local -a child_pids=()
   read -ra child_pids < <(jobs -p 2>/dev/null || true)
   if ((${#child_pids[@]} > 0)); then
     kill -9 -- "${child_pids[@]}" 2>/dev/null || true
   fi
 
+  return 0
+}
+
+#######################################
+# Log an error and exit. The EXIT trap (cleanup) removes temp files and
+# kills leftover background jobs, and the ERR trap routes every unchecked
+# failure here with its line number.
+# Arguments:
+#   --status=N  exit status (default 1); remaining args form the message.
+#######################################
+die() {
+  local status=1
+  if [[ ${1:-} == --status=* ]]; then
+    status="${1#--status=}"
+    shift
+  fi
+
+  err "$@"
   exit "${status}"
 }
 
@@ -232,8 +266,8 @@ __on_error() {
   fi
 
   # If logging itself fails, exit rather than recurse into the trap.
-  [[ ${__ON_ERROR_ACTIVE} == 'true' ]] && exit 1
-  __ON_ERROR_ACTIVE='true'
+  [[ ${__on_error_active} == 'true' ]] && exit 1
+  __on_error_active='true'
 
   # Deliberate `return N` from main: exit quietly with its status. This is
   # why main is invoked bare at the bottom of the script: wrapping the call
@@ -242,18 +276,20 @@ __on_error() {
     exit "${status}"
   fi
 
-  log_fatal --status="${status}" \
+  die --status="${status}" \
     "command failed (exit ${status}) at line ${lineno}: ${command}"
 }
 
 #######################################
-# Remove temporary artifacts on exit.
+# Kill leftover background jobs and remove temporary artifacts on exit.
 # Globals:
-#   TMP_DIR
+#   tmp_dir
 #######################################
 cleanup() {
-  if [[ -n ${TMP_DIR:-} && -d ${TMP_DIR} ]]; then
-    rm -rf "${TMP_DIR}"
+  kill_children
+
+  if [[ -n ${tmp_dir:-} && -d ${tmp_dir} ]]; then
+    rm -rf "${tmp_dir}"
   fi
 
   return 0
@@ -271,7 +307,7 @@ require_vars() {
   for name in "$@"; do
     value="${!name:-}" # indirection: the variable NAMED by $name
     if [[ -z ${value} ]]; then
-      log_fatal "required variable '${name}' is not set"
+      die "required variable '${name}' is not set"
     fi
   done
 
@@ -293,10 +329,11 @@ Usage: ${SCRIPT_NAME} [options] [args]
 
 Options:
   -h    Show this help and exit.
+  -n    Dry run: print side-effecting commands instead of running them.
   -v    Enable debug output (same as VERBOSE=true).
 
 Arguments:
-  args  TODO: document positional arguments.
+  args  TODO(username): document positional arguments.
 USAGE
 }
 
@@ -307,7 +344,7 @@ USAGE
 # Arguments:
 #   None
 # Returns:
-#   0 if all preconditions hold, non-zero otherwise.
+#   0 if all preconditions hold; otherwise exits via die.
 #######################################
 check_preconditions() {
   local missing=()
@@ -320,44 +357,62 @@ check_preconditions() {
   done
 
   if ((${#missing[@]} > 0)); then
-    log_error "missing required commands: ${missing[*]}"
-    return 1
+    die "missing required commands: ${missing[*]}"
   fi
 
   return 0
 }
 
-main() {
+#######################################
+# Parse command-line options. Leaves OPTIND set so the caller can shift.
+# Globals:
+#   dry_run, verbose
+# Arguments:
+#   $@ - the script's command-line arguments.
+# Returns:
+#   0 on success; exits 0 for -h and 2 for a bad option.
+#######################################
+parse_args() {
   local arg
 
-  trap cleanup EXIT
-  trap '__on_error "$?" "${LINENO}" "${BASH_COMMAND}"' ERR
-
-  while getopts ':hv' arg; do
+  while getopts ':hnv' arg; do
     case "${arg}" in
       h)
         usage
-        return 0
+        exit 0
+        ;;
+      n)
+        dry_run='true'
         ;;
       v)
-        VERBOSE='true'
+        verbose='true'
         ;;
       *)
-        log_error "Unexpected option '-${OPTARG}'"
+        err "Unexpected option '-${OPTARG}'"
         usage >&2
-        return 2
+        exit 2
         ;;
     esac
   done
+
+  return 0
+}
+
+main() {
+  trap cleanup EXIT
+  trap '__on_error "$?" "${LINENO}" "${BASH_COMMAND}"' ERR
+
+  setup_colors
+  parse_args "$@"
   shift $((OPTIND - 1))
 
-  check_preconditions awk || return 1
+  check_preconditions awk
 
-  log_info "starting ${SCRIPT_NAME}"
-  log_debug "arguments: $*"
+  info "starting ${SCRIPT_NAME}"
+  debug "arguments: $*"
 
-  # TODO: implement.
-  log_error "not implemented yet"
+  # TODO(username): implement.
+  err "not implemented yet"
   return 1
 }
 
@@ -383,20 +438,24 @@ main() {
   fi
 
   local target="$1"
-  local description="${2:-TODO: describe what this script does}"
+  local description="${2:-TODO(username): describe what this script does}"
   local name
-  name="$(basename "${target}")"
+  name="${target##*/}"
 
   if [[ -e ${target} ]]; then
     echo "error: '${target}' already exists" >&2
     exit 1
   fi
 
-  mkdir -p "$(dirname "${target}")"
+  if [[ ${target} == */* ]]; then
+    mkdir -p "${target%/*}"
+  fi
 
-  # Libraries (.sh under a lib/ dir, meant to be sourced) get a library variant.
+  # Libraries (.sh under a lib/ dir, meant to be sourced) get a library
+  # variant.
   local kind='executable'
-  if [[ ${target} == *.sh ]] && [[ ${target} == lib/* || ${target} == */lib/* ]]; then
+  if [[ ${target} == *.sh ]] \
+    && [[ ${target} == lib/* || ${target} == */lib/* ]]; then
     kind='library'
   fi
 

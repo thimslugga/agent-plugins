@@ -1,0 +1,8 @@
+# Tools for coding agents and browser automation.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+rtk = "latest"
+agent-browser = "latest"
+playwright = "latest"  # npm backend: needs node; run `playwright install` for browsers

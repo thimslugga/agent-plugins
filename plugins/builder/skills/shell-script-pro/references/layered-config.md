@@ -1,20 +1,19 @@
 # Layered Configuration: defaults < file < env < CLI args
 
+> **Scope note:** this loader goes beyond Google's "small utilities" guidance for shell (associative arrays as a config store, ~300 lines). Use it only when a script must stay in shell and needs layered configuration; otherwise prefer a structured language. See `SKILL.md`, "Deviations from the Google Shell Style Guide".
+
 A schema-driven config loader for bash scripts that need more than
 `getopts`: declare defaults, flag/option aliases, and validators once, then
-get four-layer precedence with validation for free. Ported from
-[pirate/bash-utils](https://github.com/pirate/bash-utils) `util/config.sh`,
-rewritten **without `eval`** — the original executes the config file as code
-and `eval`s validator strings; this version parses `KEY=value` files with
-parameter expansion and matches validators as regexes.
+get four-layer precedence with validation for free. Parses `KEY=value` files 
+with parameter expansion and matches validators as regexes.
 
-Requires **bash 4.3+** (associative arrays). Not for POSIX `sh` targets —
+Note: Requires **bash 4.3+** (associative arrays). Not for POSIX `sh` targets, 
 use plain `getopts` there.
 
 ## Usage
 
 ```bash
-source "lib/config.sh" # or paste the implementation below into your script
+source "lib/config.sh"  # or paste the implementation below into your script
 
 declare -A CONFIG_DEFAULTS=(
   [VERBOSE]=0
@@ -33,7 +32,7 @@ declare -A CONFIG_OPTS=( # options with values
 
 declare -A CONFIG_VALIDATORS=([TIMEOUT]='^[0-9]+$')
 
-declare -A CONFIG=()  # merged result
+declare -A config=()  # merged result
 
 CONFIG_PREFIX='MYAPP' # optional: also read MYAPP_<KEY> from the environment
 
@@ -51,7 +50,7 @@ main() {
   config::load "$@"   # needs your usage() for --help
   config::assert NAME # fail fast on required keys
   config::dump        # log the effective config at debug level
-  printf 'Hello, %s (timeout %s)\n' "${CONFIG[NAME]}" "${CONFIG[TIMEOUT]}"
+  printf 'Hello, %s (timeout %s)\n' "${config[NAME]}" "${config[TIMEOUT]}"
 }
 
 main "$@"
@@ -65,7 +64,7 @@ discovered before the file is read.
 Supported CLI forms: `-v`, `--verbose`, `--timeout 5`, `--timeout=5`,
 `-t 5`, `-t5`. `-h`/`--help` calls your `usage()` and exits 0. Anything
 unrecognized exits 2. `--` stops option parsing; the rest lands in
-`CONFIG__REMAINING` for the caller. (Need positional args without `--`?
+`config__remaining` for the caller. (Need positional args without `--`?
 extend the `*)` branch in `config::__parse_args` instead of calling
 `config::__unknown`.)
 
@@ -85,14 +84,14 @@ rules). Your script must define `usage()` before calling `config::load`.
 # Layered configuration: defaults < config file < environment < CLI args.
 # Requires bash 4.3+. Source this file; see references/layered-config.md.
 
-declare -gA CONFIG__ALIASES=() # alias -> "KEY:kind", kind is flag|opt
+declare -gA config__aliases=() # alias -> "KEY:kind", kind is flag|opt
 # -g: stays global even if this file is sourced inside a function.
 
 #######################################
 # Build the alias -> "KEY:kind" lookup from CONFIG_FLAGS/CONFIG_OPTS.
 # Globals:
 #   CONFIG_FLAGS, CONFIG_OPTS (read)
-#   CONFIG__ALIASES (written)
+#   config__aliases (written)
 # Arguments:
 #   None
 #######################################
@@ -103,19 +102,19 @@ config::__build_alias_map() {
 
   # Re-declare (not just clear): restores the -A attribute if the caller
   # ever unset this private global; a bare () would make it indexed and
-  # break all later CONFIG__ALIASES["k"] stores under set -u.
-  declare -gA CONFIG__ALIASES=()
+  # break all later config__aliases["k"] stores under set -u.
+  declare -gA config__aliases=()
   for key in "${!CONFIG_FLAGS[@]}"; do
     read -ra words <<<"${CONFIG_FLAGS[${key}]}"
     for alias in "${words[@]}"; do
-      CONFIG__ALIASES["${alias}"]="${key}:flag"
+      config__aliases["${alias}"]="${key}:flag"
     done
   done
 
   for key in "${!CONFIG_OPTS[@]}"; do
     read -ra words <<<"${CONFIG_OPTS[${key}]}"
     for alias in "${words[@]}"; do
-      CONFIG__ALIASES["${alias}"]="${key}:opt"
+      config__aliases["${alias}"]="${key}:opt"
     done
   done
 
@@ -133,11 +132,11 @@ config::__unknown() {
 }
 
 #######################################
-# Parse CLI args into CONFIG (args layer). Handles -h/--help, --opt=val,
+# Parse CLI args into config (args layer). Handles -h/--help, --opt=val,
 # --opt val, -o val, -oval, boolean flags, and -- to stop option parsing.
 # Globals:
-#   CONFIG__ALIASES (read)
-#   CONFIG, CONFIG__REMAINING (written)
+#   config__aliases (read)
+#   config, config__remaining (written)
 # Arguments:
 #   $@ - the argument list to parse.
 #######################################
@@ -158,47 +157,47 @@ config::__parse_args() {
         exit 0
         ;;
       --) # end of options; the rest are positional, left for the caller
-        CONFIG__REMAINING=("$@")
+        config__remaining=("$@")
         return 0
         ;;
       --*=*)
         alias="${arg%%=*}"
         alias="${alias#--}"
         value="${arg#*=}"
-        entry="${CONFIG__ALIASES[${alias}]:-}"
+        entry="${config__aliases[${alias}]:-}"
         [[ -n ${entry} ]] || config::__unknown "${arg}"
         key="${entry%:*}"
         kind="${entry#*:}"
         [[ ${kind} == 'opt' ]] || config::__unknown "${arg}"
-        CONFIG["${key}"]="${value}"
+        config["${key}"]="${value}"
         ;;
       --*)
         alias="${arg#--}"
-        entry="${CONFIG__ALIASES[${alias}]:-}"
+        entry="${config__aliases[${alias}]:-}"
         [[ -n ${entry} ]] || config::__unknown "${arg}"
         key="${entry%:*}"
         kind="${entry#*:}"
         if [[ ${kind} == 'flag' ]]; then
-          CONFIG["${key}"]=1
+          config["${key}"]=1
         else
           (($# > 0)) || {
             printf 'error: option %s requires a value\n' "${arg}" >&2
             exit 2
           }
-          CONFIG["${key}"]="$1"
+          config["${key}"]="$1"
           shift
         fi
         ;;
       -?*)
         alias="${arg:1:1}"
         value="${arg:2}"
-        entry="${CONFIG__ALIASES[${alias}]:-}"
+        entry="${config__aliases[${alias}]:-}"
         [[ -n ${entry} ]] || config::__unknown "${arg}"
         key="${entry%:*}"
         kind="${entry#*:}"
         if [[ ${kind} == 'flag' ]]; then
           [[ -z ${value} ]] || config::__unknown "${arg}"
-          CONFIG["${key}"]=1
+          config["${key}"]=1
         else
           if [[ -z ${value} ]]; then
             (($# > 0)) || {
@@ -208,7 +207,7 @@ config::__parse_args() {
             value="$1"
             shift
           fi
-          CONFIG["${key}"]="${value}"
+          config["${key}"]="${value}"
         fi
         ;;
       *)
@@ -221,12 +220,12 @@ config::__parse_args() {
 }
 
 #######################################
-# Overlay environment variables onto CONFIG (env layer): the bare KEY
+# Overlay environment variables onto config (env layer): the bare KEY
 # first, then ${CONFIG_PREFIX}_KEY when CONFIG_PREFIX is set.
 # Globals:
 #   CONFIG_DEFAULTS (schema keys to look up)
 #   CONFIG_PREFIX (read)
-#   CONFIG (written)
+#   config (written)
 # Arguments:
 #   None
 #######################################
@@ -236,11 +235,11 @@ config::__load_env() {
   local prefixed
   for key in "${!CONFIG_DEFAULTS[@]}"; do
     value="${!key:-}"
-    [[ -n ${value} ]] && CONFIG["${key}"]="${value}"
+    [[ -n ${value} ]] && config["${key}"]="${value}"
     if [[ -n ${CONFIG_PREFIX:-} ]]; then
       prefixed="${CONFIG_PREFIX}_${key}"
       value="${!prefixed:-}"
-      [[ -n ${value} ]] && CONFIG["${key}"]="${value}"
+      [[ -n ${value} ]] && config["${key}"]="${value}"
     fi
   done
 
@@ -248,16 +247,16 @@ config::__load_env() {
 }
 
 #######################################
-# Read KEY=value pairs from ${CONFIG[CONFIG_FILE]} into CONFIG (file
+# Read KEY=value pairs from ${config[CONFIG_FILE]} into config (file
 # layer). An unset CONFIG_FILE skips the layer; a missing file is fatal.
 # Globals:
-#   CONFIG (reads CONFIG_FILE, written)
+#   config (reads CONFIG_FILE, written)
 #   CONFIG_DEFAULTS (schema: unknown keys warn and are ignored)
 # Arguments:
 #   None
 #######################################
 config::__load_file() {
-  local file="${CONFIG[CONFIG_FILE]:-}"
+  local file="${config[CONFIG_FILE]:-}"
 
   [[ -n ${file} ]] || return 0
   [[ -f ${file} ]] || {
@@ -291,7 +290,7 @@ config::__load_file() {
       fi
     fi
     if [[ -n ${CONFIG_DEFAULTS[${key}]+x} ]]; then
-      CONFIG["${key}"]="${value}"
+      config["${key}"]="${value}"
     else
       printf 'warning: ignoring unknown key %s in %s\n' "${key}" "${file}" >&2
     fi
@@ -301,10 +300,10 @@ config::__load_file() {
 }
 
 #######################################
-# Check every CONFIG_VALIDATORS regex against the merged CONFIG.
+# Check every CONFIG_VALIDATORS regex against the merged config.
 # Exits 1 on the first invalid value.
 # Globals:
-#   CONFIG_VALIDATORS, CONFIG (read)
+#   CONFIG_VALIDATORS, config (read)
 # Arguments:
 #   None
 #######################################
@@ -315,7 +314,7 @@ config::validate() {
 
   for key in "${!CONFIG_VALIDATORS[@]}"; do
     pattern="${CONFIG_VALIDATORS[${key}]}"
-    value="${CONFIG[${key}]:-}"
+    value="${config[${key}]:-}"
     [[ ${value} =~ ${pattern} ]] || {
       printf 'error: invalid config %s=%s\n' "${key}" "${value}" >&2
       exit 1
@@ -326,7 +325,7 @@ config::validate() {
 }
 
 #######################################
-# Abort unless every named key is set and non-empty in CONFIG.
+# Abort unless every named key is set and non-empty in config.
 # Arguments:
 #   $@ - config keys to require.
 #######################################
@@ -335,7 +334,7 @@ config::assert() {
   local value
 
   for key in "$@"; do
-    value="${CONFIG[${key}]:-}"
+    value="${config[${key}]:-}"
     [[ -n ${value} ]] || {
       printf 'error: missing required config %s\n' "${key}" >&2
       exit 1
@@ -346,17 +345,17 @@ config::assert() {
 }
 
 #######################################
-# Print the effective config to stderr (call it from log_debug).
+# Print the effective config to stderr (call it from debug).
 # Globals:
-#   CONFIG (read)
+#   config (read)
 # Arguments:
 #   None
 #######################################
 config::dump() {
   local key
 
-  for key in "${!CONFIG[@]}"; do
-    printf 'config: %s=%s\n' "${key}" "${CONFIG[${key}]}" >&2
+  for key in "${!config[@]}"; do
+    printf 'config: %s=%s\n' "${key}" "${config[${key}]}" >&2
   done
 
   return 0
@@ -369,14 +368,14 @@ config::dump() {
 # Globals:
 #   CONFIG_DEFAULTS, CONFIG_FLAGS, CONFIG_OPTS, CONFIG_VALIDATORS,
 #   CONFIG_PREFIX (read)
-#   CONFIG (written)
+#   config (written)
 # Arguments:
 #   $@ - CLI arguments. Needs the caller's usage() for --help.
 #######################################
 config::load() {
   local key
   for key in "${!CONFIG_DEFAULTS[@]}"; do
-    CONFIG["${key}"]="${CONFIG_DEFAULTS[${key}]}"
+    config["${key}"]="${CONFIG_DEFAULTS[${key}]}"
   done
 
   config::__build_alias_map
@@ -408,7 +407,7 @@ config::load() {
 - Tested with 28 assertions covering every layer, precedence order,
   all CLI forms, `--` end-of-options, validators, missing files, and
   unknown arguments.
-- `CONFIG__ALIASES` is declared (and re-declared on every rebuild) with
+- `config__aliases` is declared (and re-declared on every rebuild) with
   `declare -gA`: the `-g` keeps it global even if the file is sourced
   inside a function, and re-declaring in `config::__build_alias_map`
   restores the `-A` attribute if the caller ever unset it (a bare `()`

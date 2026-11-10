@@ -1,0 +1,56 @@
+# Infrastructure repository for AWS (OpenTofu + CloudFormation).
+# Copy to the project root as mise.toml.
+min_version = "2026.10.0"
+
+[tools]
+opentofu = "latest"
+tflint = "latest"
+terragrunt = "latest"
+trivy = "latest"
+uv = "latest"            # runs the pipx: backend for cfn-lint
+python = "3.14"
+cfn-lint = "latest"
+awscli = { version = "latest", os = ["linux", "macos"] }
+sops = "latest"
+age = "latest"
+
+[env]
+AWS_REGION = { default = "us-east-1" }
+AWS_PAGER = ""
+TF_IN_AUTOMATION = "1"
+# Keep credentials out of this file: use AWS_PROFILE in mise.local.toml,
+# aws-vault, or the CI role.
+
+[tasks.fmt]
+description = "Format OpenTofu files"
+run = "tofu fmt -recursive"
+
+[tasks."lint:tofu"]
+description = "Check formatting and lint OpenTofu"
+tags = ["lint"]
+run = ["tofu fmt -recursive -check", "tflint --recursive"]
+
+[tasks."lint:cfn"]
+description = "Lint CloudFormation templates"
+tags = ["lint"]
+run = "cfn-lint 'templates/**/*.yaml'"
+
+[tasks."lint:security"]
+description = "Scan the configuration with trivy"
+tags = ["lint"]
+run = "trivy config --exit-code 1 ."
+
+[tasks.lint]
+description = "Run every lint task"
+depends = ["lint:*"]
+
+[tasks.plan]
+description = "Plan the stack in a directory"
+usage = 'arg "<stack>" help="Directory of the stack"'
+run = 'tofu -chdir="${usage_stack?}" init -input=false && tofu -chdir="${usage_stack?}" plan -input=false -out=tfplan'
+
+[tasks.apply]
+description = "Apply a saved plan"
+confirm = "Apply the saved plan?"
+usage = 'arg "<stack>" help="Directory of the stack"'
+run = 'tofu -chdir="${usage_stack?}" apply -input=false tfplan'

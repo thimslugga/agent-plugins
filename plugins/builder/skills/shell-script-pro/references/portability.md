@@ -2,6 +2,10 @@
 
 Decide the target before writing, because the target decides the syntax.
 
+For POSIX baselines, shell families, error handling, and library reuse, read
+[Portable shell decisions](portable-shell.md). That guide also separates
+historical Autoconf workarounds from current POSIX requirements.
+
 ## Choosing the shebang
 
 This skill's rule: `#!/usr/bin/env bash` when macOS is in scope,
@@ -14,7 +18,7 @@ template relies on.)
 | --- | --- | --- |
 | `#!/usr/bin/env bash` | Default. macOS in scope, Homebrew bash, or unknown target | Depends on `PATH`; passing flags after it is not portable |
 | `#!/bin/bash` | Linux-only: one known image, a Linux fleet, containers | Picks the system bash, which on macOS is 3.2 — do not use there |
-| `#!/bin/sh` | POSIX portability is an actual requirement | No arrays, no `[[`, no `local`, no `pipefail` |
+| `#!/bin/sh` | POSIX portability is an actual requirement | No arrays, no `[[`, no standard `local`; `pipefail` requires POSIX.1-2024 support |
 
 Put shell options on a `set` line rather than in the shebang. Two reasons: the
 guide requires it, and `#!/usr/bin/env bash -e` does not work reliably, since
@@ -43,15 +47,15 @@ macOS ships bash 3.2 and will not update it, so anything in this table breaks th
 
 ## Bash versus POSIX sh
 
-Writing `#!/bin/sh` means giving up:
+For POSIX.1-2017 targets, use these replacements:
 
 | bash | POSIX sh replacement |
 | --- | --- |
 | `[[ "$a" == "$b" ]]` | `[ "$a" = "$b" ]` |
 | `[[ "$s" =~ re ]]` | `expr` or `case`, or `grep -q` |
-| `arr=(a b c)` | Positional parameters, or a delimited string |
+| `arr=(a b c)` | Positional parameters with `set --` and `"$@"` |
 | `local var` | Widely supported in practice, not in the standard |
-| `set -o pipefail` | Not available, check `${PIPESTATUS}` equivalent by hand |
+| `set -o pipefail` | POSIX.1-2024 addition; for older targets, check stages separately or use a temporary file. No standard `${PIPESTATUS}` equivalent |
 | `$(( ))` with `++` | `n=$(( n + 1 ))` |
 | `source file` | `. file` |
 | `function name() {}` | `name() {}` |
@@ -65,10 +69,10 @@ Linux ships GNU coreutils, macOS ships BSD versions with the same names and diff
 | Task | GNU | BSD / macOS | Portable option |
 | --- | --- | --- | --- |
 | Edit in place | `sed -i 's/a/b/'` | `sed -i '' 's/a/b/'` | Write to a temp file and `mv` |
-| Relative date | `date -d '1 day ago'` | `date -v-1d` | Compute from `date +%s` |
-| Resolve symlink | `readlink -f "$p"` | Missing on older macOS | `cd "$(dirname "$p")" && pwd -P` |
+| Relative date | `date -d '1 day ago'` | `date -v-1d` | No general POSIX date-arithmetic equivalent; test the required implementation. `date +%s` is not POSIX.1-2017 |
+| Resolve symlink | `readlink -f "$p"` | Missing on older macOS | Require and test a resolver. `cd ... && pwd -P` resolves an existing directory, not a final file symlink |
 | File size | `stat -c %s` | `stat -f %z` | `wc -c < "$file"` |
-| Skip empty input | `xargs -r` | Default behaviour | Guard with `[[ -s "$list" ]]` |
+| Skip empty input | `xargs -r` | Default behaviour | Check `[ -s "$list" ]` for a prepared list; validate its quoting and filename delimiters separately |
 | Perl regex | `grep -P` | Not available | `grep -E` |
 | Single-line base64 | `base64 -w0` | `base64` | `base64 \| tr -d '\n'` |
 | Find with format | `find -printf` | Not available | `find -exec` |

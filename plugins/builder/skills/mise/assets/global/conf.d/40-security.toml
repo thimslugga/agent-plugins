@@ -1,0 +1,14 @@
+# Secret scanning, signing and vulnerability scanning.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+gitleaks = "latest"
+betterleaks = "latest"
+trufflehog = "latest"
+sops = "latest"
+age = "latest"
+cosign = "latest"
+trivy = "latest"
+osv-scanner = "latest"
+semgrep = "latest"  # pipx backend: needs uv

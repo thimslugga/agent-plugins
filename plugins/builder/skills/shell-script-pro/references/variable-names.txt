@@ -8,11 +8,14 @@ is curated from common practice; it is not a statistically measured ranking.
 Conventions
 -----------
 - Use UPPER_SNAKE_CASE for exported environment variables and script-wide
-  constants. Use lower_snake_case for locals inside functions, declared with
-  'local'.
-- Don't reassign the reserved or special names below, such as PATH, IFS, HOME,
-  UID, EUID, PPID, RANDOM, and SECONDS, unless you mean to. UID, EUID, and PPID
-  are read-only in bash.
+  constants (readonly, declared at the top of the file).
+- Use lower_snake_case for everything else: function locals (declared with
+  'local') and mutable script-wide state. The names in the sections below are
+  the UPPER_SNAKE environment/config names; a script that changes the value
+  keeps it in a lowercase variable, e.g.  verbose="${VERBOSE:-false}"
+- You MUST not reassign the reserved or special names below, such as PATH, IFS, 
+  HOME, UID, EUID, PPID, RANDOM, and SECONDS, unless you mean to. UID, EUID, and 
+  PPID are read-only in bash.
 - Mark constants read-only:  readonly SCRIPT_DIR="..."
 - Always quote expansions:   "$VAR"   and give defaults:   "${VAR:-default}"
 - Positional and special parameters such as $0, $1, $@, $#, $?, $$, and $!

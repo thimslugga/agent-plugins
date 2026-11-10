@@ -1,0 +1,31 @@
+# Rust project. Copy to the project root as mise.toml.
+min_version = "2026.10.0"
+
+[tools]
+rust = { version = "stable", components = ["clippy", "rustfmt", "rust-src"] }
+cargo-binstall = "latest"
+"cargo:cargo-nextest" = "latest"
+
+[env]
+RUST_BACKTRACE = { default = "1" }
+
+[tasks.fmt]
+description = "Format the code"
+run = "cargo fmt --all"
+
+[tasks.lint]
+description = "Check formatting and run clippy"
+run = ["cargo fmt --all -- --check", "cargo clippy --all-targets --all-features -- -D warnings"]
+
+[tasks.test]
+description = "Run tests with nextest"
+run = "cargo nextest run --all-features"
+
+[tasks.build]
+description = "Build a release binary"
+run = "cargo build --release --locked"
+sources = ["Cargo.toml", "Cargo.lock", "src/**/*.rs"]
+
+[tasks.ci]
+description = "Everything CI runs"
+depends = ["lint", "test"]

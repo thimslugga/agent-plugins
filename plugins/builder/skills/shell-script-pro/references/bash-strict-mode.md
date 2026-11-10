@@ -1,10 +1,9 @@
-# Bash Strict Mode: the full header block
+# Bash Strict Mode
 
 `set -euo pipefail` is the floor, not the ceiling. This is the complete,
 copy-pasteable strict-mode header for bash executables, plus the
 error-trap pattern that turns any unchecked failure into a diagnosed,
-timestamped fatal error. Ported (and debugged) from
-[pirate/bash-utils](https://github.com/pirate/bash-utils).
+timestamped fatal error.
 
 ## Script header
 
@@ -32,7 +31,7 @@ when the script is run as `bash script.sh`.
 ## The ERR trap: every unchecked failure becomes a diagnosed fatal
 
 ```bash
-__ON_ERROR_ACTIVE='false'
+__on_error_active='false'
 
 #######################################
 # ERR trap handler: report the failed command, its line, and its status.
@@ -58,8 +57,8 @@ __on_error() {
   fi
 
   # If logging itself fails, exit rather than recurse into the trap.
-  [[ ${__ON_ERROR_ACTIVE} == 'true' ]] && exit 1
-  __ON_ERROR_ACTIVE='true'
+  [[ ${__on_error_active} == 'true' ]] && exit 1
+  __on_error_active='true'
 
   # Deliberate `return N` from main: exit quietly with its status. This is
   # why main is invoked bare at the bottom of the script: wrapping the call
@@ -68,7 +67,7 @@ __on_error() {
     exit "${status}"
   fi
 
-  log_fatal --status="${status}" \
+  die --status="${status}" \
     "command failed (exit ${status}) at line ${lineno}: ${command}"
 }
 
@@ -96,37 +95,26 @@ End the script with a bare `main "$@"`. Two reasons:
 2. A deliberate non-zero `return` from `main` reaches the trap as
    `BASH_COMMAND="return N"`, which `__on_error` above detects and exits with
    quietly (the error was already logged). Genuine failures arrive as the
-   failing command text and get the full FATAL treatment. Verified: an
-   unchecked `out="$(false)"` inside `main` produces exactly one FATAL line
-   with the right line number, while `return 1` after `log_error` exits 1
-   with no FATAL noise.
+   failing command text and get the full `die` treatment. Verified: an
+   unchecked `out="$(false)"` inside `main` produces exactly one ERROR line
+   with the right line number, while `return 1` after `err` exits 1
+   with no duplicate report.
 
-`log_fatal` (shipped in the `scripts/init-script.sh` template) logs the message at
-FATAL level, prints a backtrace when `VERBOSE=true`, kills leftover
-background jobs, and exits with the given status (default 1):
+`die` (shipped in the `scripts/init-script.sh` template) logs the message at
+ERROR level and exits with the given status (default 1). It does no cleanup
+itself: the `EXIT` trap (`cleanup`) removes temp files and kills leftover
+background jobs, so every exit path, normal or fatal, gets the same cleanup:
 
 ```bash
-#######################################
-# Print a call-stack backtrace to stderr (outermost call last).
-# Outputs:
-#   Writes to stderr.
-#######################################
-__backtrace() {
-  local frame=1
-  local info
-  local line
-  local func
-  local src
+die() {
+  local status=1
+  if [[ ${1:-} == --status=* ]]; then
+    status="${1#--status=}"
+    shift
+  fi
 
-  # The caller builtin prints "line func file" per frame; frame 0 is
-  # this function's own caller, so start at 1.
-  while info="$(caller "${frame}" 2>/dev/null)"; do
-    read -r line func src <<<"${info}"
-    printf '  at %s (%s:%s)\n' "${func:-<top>}" "${src}" "${line}" >&2
-    ((++frame)) # prefix ++ never evaluates to 0: safe under set -e
-  done
-
-  return 0
+  err "$@"
+  exit "${status}"
 }
 ```
 
@@ -171,7 +159,7 @@ require_vars() {
   for name in "$@"; do
     value="${!name:-}" # indirection: the variable NAMED by $name
     if [[ -z ${value} ]]; then
-      log_fatal "required variable '${name}' is not set"
+      die "required variable '${name}' is not set"
     fi
   done
 

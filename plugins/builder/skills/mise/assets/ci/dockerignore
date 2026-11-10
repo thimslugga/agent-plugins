@@ -1,0 +1,13 @@
+# Copy to .dockerignore. Keeps credentials and personal mise overrides out of
+# the image when the Dockerfile runs `COPY . .`.
+.git
+.env
+.env.*
+*.tfvars
+*.tfvars.json
+# mise.local.toml, mise.<env>.local.toml, .mise/config.local.toml and the like
+**/*.local.toml
+.mise/
+.venv/
+node_modules/
+target/

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#MISE description="One line that says what this task does"
+#MISE alias="ex"
+#MISE depends=["lint"]
+#MISE sources=["src/**/*"]
+#MISE env={LOG_LEVEL = "info"}
+#USAGE flag "-n --dry-run" help="Print what would be done and change nothing"
+#USAGE flag "-p --profile <profile>" help="Build profile" default="dev" {
+#USAGE   choices "dev" "release"
+#USAGE }
+#USAGE arg "<target>" help="What to operate on"
+#USAGE arg "[extra]" help="Optional extra value"
+#
+# File task template: save as mise-tasks/<name> (or mise-tasks/<group>/<name>
+# for the task <group>:<name>), then: chmod +x mise-tasks/<name>
+#
+# mise parses the #USAGE lines and passes each value as a usage_* variable:
+#   ${usage_x?}        required arguments, and anything with a default
+#   ${usage_x:-false}  boolean flags without a default
+#   ${usage_x:-}       optional arguments without a default
+set -euo pipefail
+
+profile="${usage_profile?}"
+target="${usage_target?}"
+extra="${usage_extra:-}"
+dry_run="${usage_dry_run:-false}"
+
+log() {
+  printf '%s [%s] %s\n' "$(date +'%Y-%m-%dT%H:%M:%S%z')" "${MISE_TASK_NAME:-task}" "$*" >&2
+}
+
+# Tasks run in the config root. MISE_ORIGINAL_CWD is where mise was called.
+log "profile=${profile} target=${target} extra=${extra:-<none>} cwd=${PWD}"
+
+if [[ ${dry_run} == 'true' ]]; then
+  log 'dry run: nothing changed'
+  exit 0
+fi
+
+# Replace with the real work.
+log 'done'

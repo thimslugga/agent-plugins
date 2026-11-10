@@ -1,0 +1,4 @@
+# ~/.zlogout -- runs when a zsh LOGIN shell exits (before /etc/zlogout).
+# Not run when the shell ends through exec.
+
+[[ ${SHLVL:-1} -eq 1 && -x /usr/bin/clear ]] && /usr/bin/clear

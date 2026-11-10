@@ -4,6 +4,18 @@
 
 [bats-core](https://github.com/bats-core/bats-core) runs each `@test` in isolation and reports TAP output.
 
+Guidelines:
+
+- Test behavior, not implementation: exit codes, stdout content, files created.
+- One logical assertion group per `@test`; name tests as sentences.
+- `run` captures `status` and `output` (combined stdout+stderr; bats 1.5+
+  has `run --separate-stderr` when you need them split).
+- Keep shared helpers in `test/helpers.bash` and `load` them.
+- Never test through the network or the real filesystem when a temp dir
+  (`BATS_TEST_TMPDIR`) will do.
+- bats files are bash: they get the same shellcheck/shfmt treatment
+  (`scripts/lint.sh` covers `test/*.bats` too).
+
 Example:
 
 ```bash
@@ -26,18 +38,6 @@ setup() {
   [[ ${output} == *"Usage:"* ]]
 }
 ```
-
-Guidelines:
-
-- Test behavior, not implementation: exit codes, stdout content, files created.
-- One logical assertion group per `@test`; name tests as sentences.
-- `run` captures `status` and `output` (combined stdout+stderr; bats 1.5+
-  has `run --separate-stderr` when you need them split).
-- Keep shared helpers in `test/helpers.bash` and `load` them.
-- Never test through the network or the real filesystem when a temp dir
-  (`BATS_TEST_TMPDIR`) will do.
-- bats files are bash: they get the same shellcheck/shfmt treatment
-  (`scripts/lint.sh` covers `test/*.bats` too).
 
 ## Smoke-test checklist (no framework)
 

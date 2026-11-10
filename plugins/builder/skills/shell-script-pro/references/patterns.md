@@ -23,7 +23,7 @@ done
 shift $((OPTIND - 1))
 ```
 
-The manual loop in `assets/template.sh` handles long options. To also accept
+`getopts` handles short options only. A manual `case`/`shift` loop handles long options. To also accept
 `--config=path`:
 
 ```bash
@@ -85,8 +85,7 @@ done < <(find /var/log -type f -name '*.log' -print0)
 When the action is a single command, skip the loop:
 
 ```bash
-find /var/log -type f -name '*.log' -mtime +30 -print0 \
-  | xargs -0 -r rm -f --
+find /var/log -type f -name '*.log' -mtime +30 -print0 | xargs -0 -r rm -f --
 ```
 
 `-r` stops `xargs` running the command with no input. It is GNU-specific; BSD
@@ -238,7 +237,7 @@ done < "${config_file}"
 An allowlist means a hostile config cannot set `PATH` or `LD_PRELOAD`. See
 `references/security.md`.
 
-## JSON
+## Handling JSON
 
 ```bash
 require_cmd jq
@@ -276,7 +275,7 @@ if [[ "${line}" =~ ^version:[[:space:]]*([0-9.]+) ]]; then
 fi
 ```
 
-## Here-documents
+## Here-documents (heredoc)
 
 ```bash
 # Quoted delimiter: nothing expands.
@@ -333,3 +332,4 @@ main() {
 
 main "$@"
 ```
+

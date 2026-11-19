@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agent-plugins",
+  "description": "Personal agent plugins",
+  "owner": {
+    "name": "Adam Kaminski",
+    "email": "adam@adamkaminski.com",
+    "url": "https://github.com/thimslugga"
+  },
+  "plugins": [
+    {
+      "name": "bash-lsp",
+      "source": "./plugins/bash-lsp",
+      "category": "development"
+    },
+    {
+      "name": "builder",
+      "source": "./plugins/builder",
+      "category": "development"
+    }
+  ]
+}

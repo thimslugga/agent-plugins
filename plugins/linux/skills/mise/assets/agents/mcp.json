@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mise": {
+      "command": "/absolute/path/to/mise",
+      "args": ["--cd", "/absolute/path/to/project", "mcp"]
+    }
+  }
+}

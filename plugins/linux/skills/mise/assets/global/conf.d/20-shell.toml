@@ -1,0 +1,32 @@
+# Terminal, search and data tools.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+neovim = "latest"  # command: nvim
+tmux = { version = "latest", os = ["linux", "macos"] }
+herdr = "latest"
+zmx = { version = "latest", os = ["linux", "macos"] }
+fzf = "latest"
+zoxide = "latest"
+bottom = "latest"  # command: btm
+jq = "latest"
+yq = "latest"
+fx = "latest"
+ripgrep = "latest"  # command: rg
+ag = "latest"  # vfox plugin; needs libpcre on the host
+fd = "latest"
+ast-grep = "latest"
+sd = "latest"
+just = "latest"
+task = "latest"
+direnv = "latest"
+watchexec = "latest"
+gum = "latest"
+glow = "latest"
+websocat = "latest"
+pandoc = "latest"
+hugo = "latest"
+pkl = "latest"
+ffmpeg = "latest"  # conda package: large install
+sqlite = "latest"  # conda package; command: sqlite3

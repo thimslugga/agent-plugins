@@ -1,0 +1,14 @@
+# Git, forges and commit hooks.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+delta = "latest"
+git-lfs = "latest"
+gh = "latest"  # alias of github-cli
+glab = "latest"
+act = "latest"
+git-cliff = "latest"
+lazygit = "latest"
+jj = "latest"
+prek = "latest"

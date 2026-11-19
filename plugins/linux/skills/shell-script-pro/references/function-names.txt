@@ -1,0 +1,139 @@
+SHELL SCRIPT TOP FUNCTION NAMES
+====================================
+These are the names that show up most often in Bash and POSIX sh scripts:
+installers, CI scripts, dotfiles, ops tooling, and style guides such as
+Google's Shell Style Guide. The list is curated from common practice; it is
+not a statistically measured ranking.
+
+Conventions
+-----------
+- Use lower_snake_case for function names. Reserve UPPERCASE for variables.
+- Never name a function after a shell builtin, such as test, help, echo,
+  read, wait, cd, or type. That is why this list uses "show_help", not "help".
+- Some common names shadow external commands inside the script. For example,
+  "info" shadows GNU info and "log" shadows the macOS log command. That is
+  fine as long as the script never needs the real command.
+- Prefix subcommand handlers, for example cmd_start and cmd_install, so they
+  don't collide with real commands like /usr/bin/install.
+- Call main last: main "$@"
+
+ #   NAME                  PURPOSE
+---  --------------------  ---------------------------------------------------
+
+[ Entry point & lifecycle ]
+   1. main                  Entry point; invoked at the bottom as main "$@"
+   2. usage                 Print usage/synopsis (often then exit 1)
+   3. show_help             Print full help text (avoids the 'help' builtin)
+   4. version               Print script version
+   5. parse_args            Parse CLI flags with getopts / while-case loop
+   6. init                  Initialize state, defaults, directories
+   7. setup                 One-time environment preparation
+   8. cleanup               Remove temp files/locks; usually bound to trap EXIT
+   9. run                   Execute a command (often with logging / dry-run)
+ 10. finish                Final summary / teardown at normal exit
+
+[ Logging & output ]
+ 11. log                   Generic timestamped log line
+ 12. info                  Informational message
+ 13. warn                  Warning message (to stderr)
+ 14. err                   Error message (to stderr; Google's name)
+ 15. debug                 Message shown only when DEBUG/VERBOSE is set
+ 16. die                   Print error and exit non-zero
+ 17. setup_colors          Enable ANSI colors once at startup (tty, NO_COLOR)
+ 18. msg                   Plain message helper (printf wrapper)
+ 19. success               Green "OK"/checkmark message
+ 20. timestamp             Emit current date/time string
+ 21. print_header          Section header for output
+ 22. print_banner          Larger banner / title block
+ 23. separator             Horizontal rule line
+ 24. colorize              Wrap text in ANSI color codes (respect NO_COLOR)
+
+[ Error handling & signals ]
+ 25. on_error              Handler for trap ERR (report line/command)
+ 26. on_exit               Handler for trap EXIT
+ 27. handle_signal         Handler for INT/TERM/HUP
+ 28. abort                 Stop execution with a reason
+ 29. assert                Fail if a condition is false
+ 30. retry                 Re-run a command N times with backoff
+ 31. try                   Run a command, capture failure without exiting
+
+[ Validation & checks ]
+ 32. require               Generic precondition check
+ 33. require_root          Exit unless running as root (EUID 0)
+ 34. require_cmd           Exit unless a command is on PATH
+ 35. check_deps            Verify all required tools are installed
+ 36. command_exists        Return 0 if command -v finds it
+ 37. is_root               Boolean: running as root?
+ 38. is_installed          Boolean: package/binary installed?
+ 39. is_number             Boolean: argument is an integer?
+ 40. is_empty              Boolean: string/dir empty?
+ 41. validate_input        Sanitize/validate user-supplied values
+ 42. check_os              Ensure supported OS/distro
+ 43. check_network         Verify connectivity / DNS
+
+[ Interactive prompts ]
+ 44. confirm               Yes/no confirmation (honor --yes)
+ 45. prompt                Ask for a value with optional default
+ 46. ask_yes_no            Explicit y/n loop
+ 47. read_password         Read secret input with read -rs
+ 48. select_option         Menu selection (select / case)
+ 49. pause                 "Press any key to continue"
+
+[ Files & directories ]
+ 50. backup_file           Copy file to *.bak / timestamped backup
+ 51. ensure_dir            mkdir -p with permission handling
+ 52. file_exists           Boolean: [ -f "$1" ]
+ 53. dir_exists            Boolean: [ -d "$1" ]
+ 54. make_temp             mktemp wrapper registered for cleanup
+ 55. safe_rm               rm with guard rails (no empty/"/" paths)
+ 56. copy_files            cp/rsync wrapper
+ 57. download              curl/wget wrapper with retries
+ 58. extract               Unpack tar/zip/gz by extension
+ 59. checksum              Compute/verify sha256
+
+[ Strings & arrays ]
+ 60. trim                  Strip leading/trailing whitespace
+ 61. to_lower              Lowercase a string
+ 62. to_upper              Uppercase a string
+ 63. join_by               Join array elements with a delimiter
+ 64. split_string          Split a string into an array (avoids /usr/bin/split)
+ 65. contains              Boolean: substring present?
+ 66. starts_with           Boolean: prefix match
+ 67. ends_with             Boolean: suffix match
+ 68. urlencode             Percent-encode a string
+ 69. in_array              Boolean: value present in array?
+
+[ System & processes ]
+ 70. detect_os             Identify OS/distro (via /etc/os-release, uname)
+ 71. get_arch              Normalize uname -m (x86_64/amd64, arm64/aarch64)
+ 72. install_package       Distro-agnostic dnf/apt/brew wrapper
+ 73. update_system         Refresh/upgrade packages
+ 74. restart_service       systemctl/launchctl restart wrapper
+ 75. is_service_running    Boolean: service active?
+ 76. get_ip                Primary IP address
+ 77. kill_process          Terminate by name/PID gracefully, then force
+ 78. wait_for              Poll until a condition is true or timeout
+ 79. wait_for_port         Poll until a TCP port accepts connections
+ 80. spinner               Animated spinner for long tasks
+ 81. progress_bar          Textual progress indicator
+ 82. elapsed_time          Human-readable duration since START_TIME
+
+[ Configuration & environment ]
+ 83. load_config           Source/parse a config file
+ 84. load_env              Load KEY=VALUE pairs from a .env file
+ 85. get_config            Read a config value with default
+ 86. set_config            Write/update a config value
+ 87. source_if_exists      Source a file only if it is present
+
+[ Locking & concurrency ]
+ 88. acquire_lock          flock / mkdir-based lock
+ 89. release_lock          Release the lock (also in cleanup)
+ 90. is_running            Boolean: another instance active? (PID file)
+
+[ Subcommand handlers ]
+ 91. cmd_start             "script start" handler
+ 92. cmd_stop              "script stop" handler
+ 93. cmd_restart           "script restart" handler
+ 94. cmd_status            "script status" handler
+ 95. cmd_install           "script install" handler
+96. cmd_deploy            "script deploy" handler

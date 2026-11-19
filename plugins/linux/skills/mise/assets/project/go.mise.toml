@@ -1,0 +1,34 @@
+# Go project. Copy to the project root as mise.toml.
+min_version = "2026.10.0"
+
+[tools]
+go = "1.27"
+golangci-lint = "latest"
+gofumpt = "latest"
+
+[env]
+# Use the toolchain mise selected; do not let Go download another one.
+GOTOOLCHAIN = "local"
+CGO_ENABLED = "0"
+
+[tasks.fmt]
+description = "Format the code"
+run = "gofumpt -l -w ."
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "golangci-lint run ./..."
+
+[tasks.test]
+description = "Run tests with the race detector"
+env = { CGO_ENABLED = "1" }
+run = "go test -race -cover ./..."
+
+[tasks.build]
+description = "Build a static binary into bin/"
+run = "go build -trimpath -ldflags='-s -w' -o bin/ ./..."
+sources = ["go.mod", "go.sum", "**/*.go"]
+
+[tasks.ci]
+description = "Everything CI runs"
+depends = ["lint", "test", "build"]

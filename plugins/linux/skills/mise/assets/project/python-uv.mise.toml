@@ -1,0 +1,43 @@
+# Python project managed with uv. Copy to the project root as mise.toml.
+# Expects pyproject.toml; run `mise run sync` once to create uv.lock and .venv.
+min_version = "2026.10.0"
+
+[tools]
+python = "3.14"
+uv = "latest"
+ruff = "latest"
+
+[settings]
+# Activate the uv-managed .venv once uv.lock exists.
+python.uv_venv_auto = "create|source"
+
+[env]
+PYTHONDONTWRITEBYTECODE = "1"
+
+[tasks.sync]
+description = "Install the locked dependencies"
+run = "uv sync --locked"
+sources = ["pyproject.toml", "uv.lock"]
+outputs = [".venv/pyvenv.cfg"]
+
+[tasks.fmt]
+description = "Format the code"
+run = ["ruff format .", "ruff check --fix ."]
+
+[tasks.lint]
+description = "Lint and check formatting"
+run = ["ruff check .", "ruff format --check ."]
+
+[tasks.typecheck]
+description = "Type-check with mypy"
+depends = ["sync"]
+run = "uv run --locked mypy ."
+
+[tasks.test]
+description = "Run tests with coverage"
+depends = ["sync"]
+run = "uv run --locked pytest --cov"
+
+[tasks.ci]
+description = "Everything CI runs"
+depends = ["lint", "typecheck", "test"]

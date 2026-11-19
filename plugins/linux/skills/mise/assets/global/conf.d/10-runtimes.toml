@@ -1,0 +1,15 @@
+# Language runtimes and their package managers.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+python = "3.14"
+uv = "latest"
+node = "lts"
+pnpm = "latest"
+bun = "latest"
+go = "latest"
+rust = "stable"  # rustup channel; updated in place by mise upgrade
+cargo-binstall = "latest"  # lets cargo: tools download prebuilt binaries
+ruby = "latest"  # may compile from source: needs a C toolchain and OpenSSL headers
+java = "latest"

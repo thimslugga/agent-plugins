@@ -1,0 +1,26 @@
+# Copy to .github/workflows/ci.yml. Expects a `ci` task in mise.toml.
+# jdx/mise-action installs mise and the project's tools, and runs
+# `mise install --locked` when the repository has a mise.lock.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        # with:
+        #   version: 2026.10.4   # pin mise itself
+      - run: mise run ci

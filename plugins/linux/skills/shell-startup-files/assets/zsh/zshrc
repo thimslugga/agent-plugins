@@ -1,0 +1,17 @@
+# ~/.zshrc -- every INTERACTIVE zsh, login or not.
+# Put here: options, history, prompt, completion, aliases, functions, keys.
+
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"
+HISTSIZE=10000
+SAVEHIST=10000
+setopt APPEND_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY
+setopt AUTO_CD INTERACTIVE_COMMENTS
+
+autoload -Uz compinit && compinit
+
+PROMPT='%n@%m %~ %# '
+
+alias ll='ls -l'
+alias la='ls -la'
+
+bindkey -e

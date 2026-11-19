@@ -1,0 +1,15 @@
+{
+  "languages": {
+    "bash": {
+      "name": "bash-language-server",
+      "command": "bash-language-server",
+      "args": ["start"],
+      "file_extensions": ["sh", "bash"],
+      "project_patterns": [".git"],
+      "exclude_patterns": ["**/node_modules/**", "**/.venv/**"],
+      "multi_workspace": false,
+      "initialization_options": {},
+      "request_timeout_secs": 60
+    }
+  }
+}

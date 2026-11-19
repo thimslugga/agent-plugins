@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$CLAUDE_ENV_FILE\" ] && echo 'eval \"$(mise hook-env -s bash)\"' >> \"$CLAUDE_ENV_FILE\"; true"
+          }
+        ]
+      }
+    ]
+  }
+}

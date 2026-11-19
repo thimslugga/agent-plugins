@@ -1,0 +1,15 @@
+# ~/.zprofile -- zsh LOGIN shells, read before ~/.zshrc.
+# (ssh host, console, macOS tabs, tmux panes. Not a Linux terminal tab.)
+#
+# Put here: PATH and session environment. On macOS this runs after
+# /etc/zprofile (path_helper), so entries prepended here stay in front.
+
+typeset -U path PATH            # unique entries, first occurrence wins
+path=("$HOME/.local/bin" "$HOME/bin" $path)
+export PATH
+
+# Homebrew on Apple silicon (delete on Linux):
+# eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Reuse a POSIX ~/.profile shared with Bash, if you keep one:
+# [[ -r ~/.profile ]] && emulate sh -c '. ~/.profile'

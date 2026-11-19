@@ -1,0 +1,22 @@
+# AWS, infrastructure as code, Kubernetes and containers.
+# Global mise fragment: copy to ~/.config/mise/conf.d/ (scripts/apply-global-config.sh).
+# Delete the lines you do not want, then run: mise install
+
+[tools]
+awscli = { version = "latest", os = ["linux", "macos"] }  # alias of aws-cli; command: aws
+aws-sam-cli = "latest"  # alias of aws-sam; command: sam
+aws-cdk = "latest"  # npm backend: needs node; command: cdk
+aws-amplify = "latest"  # command: amplify
+amazon-ecr-credential-helper = "latest"
+aws-vault = "latest"
+opentofu = "latest"  # command: tofu
+terraform = "latest"
+terragrunt = "latest"
+packer = "latest"
+vault = "latest"
+kubectl = "latest"
+helm = "latest"
+oc = "latest"
+ansible-core = "latest"  # pipx backend: needs uv. Use `ansible` instead for the full community package; do not install both
+devcontainer-cli = "latest"  # npm backend: needs node; command: devcontainer
+dive = "latest"

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bash-lsp",
+  "version": "1.0.0",
+  "description": "Bash language server (bash-language-server) for code intelligence in shell scripts.",
+  "author": {
+    "name": "Adam Kaminski",
+    "email": "adam@adamkaminski.com",
+    "url": "https://github.com/thimslugga"
+  },
+  "homepage": "https://github.com/thimslugga/agent-plugins/blob/main/plugins/bash-lsp/README.md",
+  "repository": "https://github.com/thimslugga/agent-plugins/tree/main/plugins/bash-lsp",
+  "license": "MIT",
+  "keywords": ["bash", "shell", "lsp", "language-server", "shellcheck"]
+}

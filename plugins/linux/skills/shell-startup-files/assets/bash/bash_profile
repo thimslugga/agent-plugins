@@ -1,0 +1,21 @@
+# ~/.bash_profile -- Bash login shells (ssh host, console, macOS tabs, tmux).
+#
+# Its existence stops Bash from reading ~/.bash_login and ~/.profile, so this
+# file must pull them in itself. Keep it a thin delegator.
+
+# 1. Portable login environment (PATH, exports).
+if [ -r "${HOME}/.profile" ]; then
+  . "${HOME}/.profile"
+fi
+
+# 2. Interactive setup. A login shell does not read ~/.bashrc by itself.
+#    If ~/.profile already sources ~/.bashrc for Bash, delete this block.
+case $- in
+  *i*)
+    if [ -r "${HOME}/.bashrc" ]; then
+      . "${HOME}/.bashrc"
+    fi
+    ;;
+esac
+
+# 3. Login-only actions go below (ssh-agent, one-time messages).

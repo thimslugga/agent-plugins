@@ -1,7 +1,7 @@
 ---
 name: mindcraft
 description: >-
-Mine closed and resolved work items — tickets, issues, pull requests, epics, goals, action items, incidents, retro notes, changelogs — for recurring procedures worth encoding as agent skills, scripts, or automation. Use whenever someone wants to review completed work for automation or skill opportunities, asks "what skills should we build", runs a retrospective over closed tickets or merged PRs, wants to turn repeated toil into something an agent can execute, audits a backlog or sprint for patterns worth capturing, or wants a postmortem, recurring review comment, or repeated runbook turned into a reusable skill. Reach for this even when the person only says "look at what we shipped last quarter and tell me what to automate."
+  Mine closed and resolved work items — tickets, issues, pull requests, epics, goals, action items, incidents, retro notes, changelogs — for recurring procedures worth encoding as agent skills, scripts, or automation. Use whenever someone wants to review completed work for automation or skill opportunities, asks "what skills should we build", runs a retrospective over closed tickets or merged PRs, wants to turn repeated toil into something an agent can execute, audits a backlog or sprint for patterns worth capturing, or wants a postmortem, recurring review comment, or repeated runbook turned into a reusable skill. Reach for this even when the person only says "look at what we shipped last quarter and tell me what to automate."
 ---
 
 # Mindcraft Skill Miner

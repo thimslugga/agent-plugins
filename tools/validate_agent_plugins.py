@@ -336,10 +336,9 @@ def check_kiro_extension(root: Path, report: Report) -> int:
 
     steering_dir = ext_dir / "steering"
     if not steering_dir.is_dir():
-        report.warn(
-            "dev.kiro/",
-            "extension directory exists but has no steering/ subdirectory",
-        )
+        # settings/ or hooks/ alone is a valid extension; only flag an empty one.
+        if not any(ext_dir.iterdir()):
+            report.warn("dev.kiro/", "extension directory is empty")
         return 0
 
     count = 0

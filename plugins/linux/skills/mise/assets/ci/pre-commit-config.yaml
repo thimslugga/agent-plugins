@@ -1,0 +1,16 @@
+# Copy to .pre-commit-config.yaml; works with prek and pre-commit.
+# Hooks call the tools mise already installed, so versions come from mise.toml.
+repos:
+  - repo: local
+    hooks:
+      - id: mise-lint
+        name: mise run lint
+        entry: mise run lint
+        language: system
+        pass_filenames: false
+  - repo: https://github.com/owenlamont/ryl-pre-commit
+    rev: v0.29.0 # match the latest ryl release tag
+    hooks:
+      - id: ryl-check
+        args: [--fix]
+      - id: ryl-format

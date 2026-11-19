@@ -1,0 +1,84 @@
+# Repository hygiene for any project: shell, YAML, TOML, Markdown, workflows,
+# spelling, links and secrets. Copy to the project root as mise.toml, or merge
+# the [tools] and [tasks] entries into an existing one.
+min_version = "2026.10.0"
+
+[tools]
+shellcheck = "latest"
+shfmt = "latest"
+actionlint = "latest"
+hadolint = "latest"
+tombi = "latest"
+rumdl = "latest"
+typos = "latest"
+lychee = "latest"
+editorconfig-checker = "latest"
+gitleaks = "latest"
+prek = "latest"
+uv = "latest"              # runs the pipx: backend for ryl
+"pipx:ryl" = "latest"      # YAML linter and formatter; not in the registry
+
+[tasks."lint:shell"]
+description = "Lint and format-check shell scripts"
+tags = ["lint"]
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+files=()
+while IFS= read -r file; do files+=("${file}"); done < <(shfmt -f .)
+if ((${#files[@]} == 0)); then exit 0; fi
+shellcheck -x -S warning "${files[@]}"
+shfmt -d "${files[@]}"
+'''
+
+[tasks."lint:yaml"]
+description = "Lint YAML with ryl"
+tags = ["lint"]
+run = "ryl check ."
+
+[tasks."lint:toml"]
+description = "Lint TOML with tombi"
+tags = ["lint"]
+run = "tombi lint"
+
+[tasks."lint:markdown"]
+description = "Lint Markdown with rumdl"
+tags = ["lint"]
+run = "rumdl check ."
+
+[tasks."lint:actions"]
+description = "Lint GitHub Actions workflows"
+tags = ["lint"]
+run = "actionlint"
+
+[tasks."lint:spelling"]
+description = "Check spelling with typos"
+tags = ["lint"]
+run = "typos"
+
+[tasks."lint:editorconfig"]
+description = "Check files against .editorconfig"
+tags = ["lint"]
+run = "editorconfig-checker"
+
+[tasks."lint:secrets"]
+description = "Scan the working tree for secrets"
+tags = ["lint"]
+run = "gitleaks dir --redact ."
+
+[tasks."lint:mise"]
+description = "Check mise config formatting and tasks"
+tags = ["lint"]
+run = ["mise fmt --check", "mise tasks validate"]
+
+[tasks.lint]
+description = "Run every lint task"
+depends = ["lint:*"]
+
+[tasks.links]
+description = "Check links in Markdown files"
+run = "lychee --no-progress '**/*.md'"
+
+[tasks.pre-commit]
+description = "Run the commit hooks on staged files"
+run = "prek run"
